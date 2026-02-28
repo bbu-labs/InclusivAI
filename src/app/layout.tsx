@@ -16,13 +16,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" data-theme="inclusivai">
       <body className="font-sans antialiased">
-        <AppProvider>
-          <div className="min-h-screen bg-base-200">
-            <div className="mx-auto max-w-md min-h-screen bg-base-100 shadow-xl relative">
-              {children}
-            </div>
-          </div>
-        </AppProvider>
+        <AppProvider>{children}</AppProvider>
       </body>
     </html>
   );

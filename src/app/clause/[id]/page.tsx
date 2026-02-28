@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import Header from "@/components/Header";
+import AppShell from "@/components/AppShell";
 import {
   IoShieldCheckmark,
   IoWarning,
@@ -94,6 +95,7 @@ export default function ClauseDetailPage() {
   const RiskIcon = getRiskIcon(clause.riskLevel);
 
   return (
+    <AppShell>
     <div className="flex flex-col min-h-screen">
       <Header title="Detalhe da Cláusula" showBack backTo="/results" />
 
@@ -175,5 +177,6 @@ export default function ClauseDetailPage() {
         </button>
       </div>
     </div>
+    </AppShell>
   );
 }

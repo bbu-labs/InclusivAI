@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import Header from "@/components/Header";
 import StepIndicator from "@/components/StepIndicator";
+import AppShell from "@/components/AppShell";
 import {
   IoShieldCheckmark,
   IoWarning,
@@ -213,6 +214,7 @@ export default function ResultsPage() {
 
   if (isLoading) {
     return (
+      <AppShell>
       <div className="flex flex-col min-h-screen">
         <Header title="Analisando" />
         <StepIndicator steps={STEPS} currentStep={3} />
@@ -231,12 +233,14 @@ export default function ResultsPage() {
           </div>
         </div>
       </div>
+      </AppShell>
     );
   }
 
   if (!result) return null;
 
   return (
+    <AppShell>
     <div className="flex flex-col min-h-screen">
       <Header title="Resultado" showBack backTo="/" />
       <StepIndicator steps={STEPS} currentStep={3} />
@@ -329,5 +333,6 @@ export default function ResultsPage() {
         </button>
       </div>
     </div>
+    </AppShell>
   );
 }

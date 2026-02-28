@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import Header from "@/components/Header";
 import StepIndicator from "@/components/StepIndicator";
+import AppShell from "@/components/AppShell";
 import { IoLink, IoArrowForward } from "react-icons/io5";
 
 const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
@@ -39,6 +40,7 @@ export default function UrlInputPage() {
   };
 
   return (
+    <AppShell>
     <div className="flex flex-col min-h-screen">
       <Header title="Colar URL" showBack backTo="/" />
       <StepIndicator steps={STEPS} currentStep={0} />
@@ -52,20 +54,20 @@ export default function UrlInputPage() {
         </div>
 
         <div className="form-control w-full">
-          <label className="floating-label">
-            <span>URL do documento</span>
-            <input
-              type="url"
-              placeholder="https://exemplo.com/contrato.pdf"
-              className={`input input-bordered w-full ${error ? "input-error" : ""}`}
-              value={url}
-              onChange={(e) => {
-                setUrl(e.target.value);
-                if (error) setError("");
-              }}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-            />
+          <label className="label">
+            <span className="label-text">URL do documento</span>
           </label>
+          <input
+            type="url"
+            placeholder="https://exemplo.com/contrato.pdf"
+            className={`input input-bordered w-full ${error ? "input-error" : ""}`}
+            value={url}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              if (error) setError("");
+            }}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+          />
           {error && (
             <label className="label">
               <span className="label-text-alt text-error">{error}</span>
@@ -109,5 +111,6 @@ export default function UrlInputPage() {
         </div>
       </div>
     </div>
+    </AppShell>
   );
 }

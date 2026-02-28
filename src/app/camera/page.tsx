@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import Header from "@/components/Header";
 import StepIndicator from "@/components/StepIndicator";
+import AppShell from "@/components/AppShell";
 import { IoCamera, IoImage, IoArrowForward, IoClose } from "react-icons/io5";
 
 const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
@@ -47,6 +48,7 @@ export default function CameraPage() {
   };
 
   return (
+    <AppShell>
     <div className="flex flex-col min-h-screen">
       <Header title="Câmera / Foto" showBack backTo="/" />
       <StepIndicator steps={STEPS} currentStep={0} />
@@ -149,5 +151,6 @@ export default function CameraPage() {
         )}
       </div>
     </div>
+    </AppShell>
   );
 }
