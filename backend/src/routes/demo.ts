@@ -5,7 +5,7 @@ const demo = new Hono<AppEnv>();
 
 // GET /api/demo — list available demo entries
 demo.get("/", async (c) => {
-  const kv = "CACHE" in c.env ? (c.env as Record<string, unknown>).CACHE as KVNamespace : undefined;
+  const kv = "INCLUSIVAI_CACHE" in c.env ? (c.env as Record<string, unknown>).INCLUSIVAI_CACHE as KVNamespace : undefined;
 
   if (!kv) {
     return c.json({ error: "Cache não configurado" }, 503);
@@ -25,7 +25,7 @@ demo.get("/:category/:slug", async (c) => {
   const slug = c.req.param("slug");
   const key = `demo:${category}:${slug}`;
 
-  const kv = "CACHE" in c.env ? (c.env as Record<string, unknown>).CACHE as KVNamespace : undefined;
+  const kv = "INCLUSIVAI_CACHE" in c.env ? (c.env as Record<string, unknown>).INCLUSIVAI_CACHE as KVNamespace : undefined;
 
   if (!kv) {
     return c.json({ error: "Cache não configurado" }, 503);

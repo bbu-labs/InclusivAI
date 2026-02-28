@@ -3,7 +3,6 @@ main = "src/index.ts"
 compatibility_date = "2025-02-10"
 compatibility_flags = ["nodejs_compat"]
 
-# KV Namespace - replace with actual ID after `wrangler kv namespace create CACHE`
-# [[kv_namespaces]]
-# binding = "CACHE"
-# id = "YOUR_KV_NAMESPACE_ID"
+[[kv_namespaces]]
+binding = "INCLUSIVAI_CACHE"
+id = "130b0bfc04e74f5293abc632fbb84b33"

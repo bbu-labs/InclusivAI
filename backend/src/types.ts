@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Cloudflare Worker Bindings
 export type Bindings = {
-  CACHE: KVNamespace;
+  INCLUSIVAI_CACHE: KVNamespace;
   MISTRAL_API_KEY: string;
   ELEVENLABS_API_KEY: string;
   SUPABASE_URL: string;

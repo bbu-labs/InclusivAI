@@ -29,20 +29,20 @@ This opens a browser window. Authorize wrangler to access your Cloudflare accoun
 
 ```bash
 cd backend
-npx wrangler kv namespace create CACHE
+npx wrangler kv namespace create INCLUSIVAI-CACHE
 ```
 
 This outputs something like:
 
 ```
-{ binding = "CACHE", id = "abc123def456..." }
+{ binding = "INCLUSIVAI_CACHE", id = "abc123def456..." }
 ```
 
 **Copy the `id` value** and update `wrangler.toml`:
 
 ```toml
 [[kv_namespaces]]
-binding = "CACHE"
+binding = "INCLUSIVAI_CACHE"
 id = "abc123def456..."
 ```
 
@@ -115,14 +115,16 @@ For the `audio` bucket, add a public policy:
 
 ## 5. Seed Demo Data
 
-Generate and upload demo data to KV:
+Generate and upload demo data to KV (run from the `backend/` directory):
 
 ```bash
+cd backend
+
 # Generate the bulk JSON file
-npx tsx scripts/seed-demo.ts
+npm run seed
 
 # Upload to KV
-npx wrangler kv bulk put scripts/kv/_bulk.json --binding CACHE
+npx wrangler kv bulk put scripts/kv/_bulk.json --binding INCLUSIVAI_CACHE
 ```
 
 ---

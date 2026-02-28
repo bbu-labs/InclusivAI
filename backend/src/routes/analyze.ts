@@ -166,7 +166,7 @@ analyze.post("/:analysisId/audio", async (c) => {
     return c.json({ error: "Análise sem conteúdo para gerar áudio" }, 400);
   }
 
-  const kvCache = "CACHE" in c.env ? (c.env as Record<string, unknown>).CACHE as KVNamespace : undefined;
+  const kvCache = "INCLUSIVAI_CACHE" in c.env ? (c.env as Record<string, unknown>).INCLUSIVAI_CACHE as KVNamespace : undefined;
 
   const result = await generateAudio(
     audioText.trim(),

@@ -2,9 +2,9 @@
  * Seed demo data into KV for hackathon demo.
  *
  * Usage:
- *   1. Create KV namespace: wrangler kv namespace create CACHE
+ *   1. Create KV namespace: wrangler kv namespace create INCLUSIVAI-CACHE
  *   2. Update wrangler.toml with the namespace ID
- *   3. Run: npx wrangler kv key put --binding CACHE "demo:tos:instagram" "$(cat scripts/kv/tos-instagram.json)"
+ *   3. Run: npx wrangler kv key put --binding INCLUSIVAI_CACHE "demo:tos:instagram" "$(cat scripts/kv/tos-instagram.json)"
  *      (repeat for each demo entry)
  *
  * Or use the bulk upload approach below.
@@ -12,7 +12,11 @@
 
 import { ALL_DEMOS } from "./demo-data";
 import { writeFileSync, mkdirSync } from "fs";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const KV_DIR = join(__dirname, "kv");
 mkdirSync(KV_DIR, { recursive: true });
@@ -69,4 +73,4 @@ bulkData.push({
 writeFileSync(join(KV_DIR, "_bulk.json"), JSON.stringify(bulkData, null, 2));
 console.log(`\nGenerated _bulk.json with ${bulkData.length} entries`);
 console.log("\nTo upload all at once:");
-console.log("  npx wrangler kv bulk put scripts/kv/_bulk.json --binding CACHE");
+console.log("  npx wrangler kv bulk put scripts/kv/_bulk.json --binding INCLUSIVAI_CACHE");
