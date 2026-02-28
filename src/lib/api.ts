@@ -18,9 +18,13 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8787";
 
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
+  fallback: boolean;
+  detail?: string;
+  constructor(status: number, message: string, fallback = false, detail?: string) {
     super(message);
     this.status = status;
+    this.fallback = fallback;
+    this.detail = detail;
     this.name = "ApiError";
   }
 }
@@ -58,7 +62,12 @@ async function request<T>(
   const json = await res.json();
 
   if (!res.ok) {
-    throw new ApiError(res.status, json.error || json.message || "Erro desconhecido");
+    throw new ApiError(
+      res.status,
+      json.error || json.message || "Erro desconhecido",
+      !!json.fallback,
+      json.detail
+    );
   }
 
   return json as T;

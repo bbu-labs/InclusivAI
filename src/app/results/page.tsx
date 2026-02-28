@@ -32,6 +32,22 @@ import {
 
 const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
 
+/** Build the same text the backend would send to TTS, for browser fallback */
+function buildAudioText(summary: Record<string, unknown>): string {
+  let text = "";
+  if (summary.resumo) text += summary.resumo + "\n\n";
+  if (summary.resumo_executivo) text += summary.resumo_executivo + "\n\n";
+  if (summary.explicacao) text += summary.explicacao + "\n\n";
+  if (summary.recomendacao) text += "Recomendação: " + summary.recomendacao + "\n\n";
+  if (summary.acao_recomendada) text += "Ação recomendada: " + summary.acao_recomendada + "\n\n";
+  if (Array.isArray(summary.pontos_criticos)) {
+    for (const p of summary.pontos_criticos as Array<{ item: string; explicacao: string }>) {
+      text += `${p.item}: ${p.explicacao}\n`;
+    }
+  }
+  return text.trim();
+}
+
 // ─── Score Gauge ───
 
 function ScoreGauge({ score }: { score: number }) {
@@ -609,6 +625,7 @@ export default function ResultsPage() {
                 <AudioPlayer
                   analysisId={display.analysisId}
                   initialUrl={display.audioUrl}
+                  fallbackText={buildAudioText(display.summary as unknown as Record<string, unknown>)}
                 />
               </div>
             )}

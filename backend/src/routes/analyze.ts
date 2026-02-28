@@ -168,13 +168,36 @@ analyze.post("/:analysisId/audio", async (c) => {
 
   const kvCache = "INCLUSIVAI_CACHE" in c.env ? (c.env as Record<string, unknown>).INCLUSIVAI_CACHE as KVNamespace : undefined;
 
-  const result = await generateAudio(
-    audioText.trim(),
-    analysisId,
-    supabaseAdmin,
-    kvCache,
-    c.env.ELEVENLABS_API_KEY
-  );
+  let result;
+  try {
+    result = await generateAudio(
+      audioText.trim(),
+      analysisId,
+      supabaseAdmin,
+      kvCache,
+      c.env.ELEVENLABS_API_KEY
+    );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+
+    // ElevenLabs quota/billing errors (status 401 with "quota" or 422 with quota info)
+    if (/ElevenLabs API error.*(401|422)/.test(message) && /quota|credit|billing|subscription/i.test(message)) {
+      return c.json({ error: "Serviço de áudio indisponível", detail: "Quota do serviço de voz excedida", fallback: true }, 402);
+    }
+
+    // ElevenLabs rate limit
+    if (/ElevenLabs API error.*429/.test(message)) {
+      return c.json({ error: "Limite de requisições atingido", detail: "Tente novamente em alguns instantes", fallback: true }, 429);
+    }
+
+    // Supabase upload errors
+    if (message.includes("Failed to upload audio")) {
+      return c.json({ error: "Erro ao salvar áudio", detail: message }, 500);
+    }
+
+    // Other ElevenLabs / unknown errors
+    return c.json({ error: "Erro no serviço de áudio", detail: message, fallback: true }, 502);
+  }
 
   // Update analysis with audio URL
   await supabaseAdmin
