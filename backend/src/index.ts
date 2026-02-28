@@ -6,6 +6,7 @@ import { authMiddleware } from "./middleware/auth";
 import authRoutes from "./routes/auth";
 import documentRoutes from "./routes/documents";
 import analyzeRoutes from "./routes/analyze";
+import rankingRoutes from "./routes/ranking";
 
 const app = new Hono<AppEnv>();
 
@@ -32,6 +33,7 @@ app.get("/health", (c) => {
 app.route("/api/auth", authRoutes);
 app.route("/api/documents", documentRoutes);
 app.route("/api/analyze", analyzeRoutes);
+app.route("/api/ranking", rankingRoutes);
 
 // Global error handler
 app.onError((err, c) => {

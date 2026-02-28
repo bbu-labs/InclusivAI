@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MistralClient } from "../services/mistral";
 import type { AnalysisType, SimplificationLevel, SourceType } from "../types";
-import { readFromText, readFromImage, readFromPdf } from "./reader";
+import { readFromText, readFromImage, readFromPdf, type StructuredDocument } from "./reader";
 import { simplifyDocument, type SimplifierResult } from "./simplifier";
 
 // Cost per million tokens (USD) — Mistral pricing
@@ -48,6 +48,7 @@ export async function analyzeDocument(
 
   // Step 1: Reader Agent → structured_data
   let structuredText: string;
+  let structuredDoc: StructuredDocument | null = null;
 
   if (input.sourceType === "pdf_upload" && input.filePath) {
     // Download PDF from Supabase Storage → extract text → Reader
@@ -66,6 +67,7 @@ export async function analyzeDocument(
     totalTokensOut += readerResult.tokensOutput;
     totalCost += estimateCost(readerResult.modelUsed, readerResult.tokensInput, readerResult.tokensOutput);
     structuredText = readerResult.data.texto_completo;
+    structuredDoc = readerResult.data;
 
     await supabaseAdmin
       .from("documents")
@@ -98,6 +100,7 @@ export async function analyzeDocument(
     totalTokensOut += readerResult.tokensOutput;
     totalCost += estimateCost(readerResult.modelUsed, readerResult.tokensInput, readerResult.tokensOutput);
     structuredText = readerResult.data.texto_completo;
+    structuredDoc = readerResult.data;
 
     await supabaseAdmin
       .from("documents")
@@ -118,6 +121,7 @@ export async function analyzeDocument(
     totalTokensOut += readerResult.tokensOutput;
     totalCost += estimateCost(readerResult.modelUsed, readerResult.tokensInput, readerResult.tokensOutput);
     structuredText = readerResult.data.texto_completo;
+    structuredDoc = readerResult.data;
 
     await supabaseAdmin
       .from("documents")
@@ -180,6 +184,51 @@ export async function analyzeDocument(
   });
   if (rpcError) {
     console.error("Failed to increment analyses count for user:", input.userId, rpcError.message);
+  }
+
+  // Step 6: Upsert company ranking (ToS analyses only)
+  if (input.analysisType === "tos" && abuseScore !== null && structuredDoc?.orgao_emissor) {
+    const companyName = structuredDoc.orgao_emissor;
+
+    // Extract top issues from abusive clauses
+    const topIssues =
+      "clausulas_abusivas" in simplifierResult.data
+        ? (simplifierResult.data as { clausulas_abusivas: Array<{ explicacao_simples: string; gravidade: string }> })
+            .clausulas_abusivas.slice(0, 5)
+            .map((cl) => ({ issue: cl.explicacao_simples, gravidade: cl.gravidade }))
+        : [];
+
+    // Try to fetch existing ranking
+    const { data: existing } = await supabaseAdmin
+      .from("company_rankings")
+      .select("id, avg_abuse_score, total_analyses")
+      .eq("company_name", companyName)
+      .single();
+
+    if (existing) {
+      // Update running average
+      const newTotal = existing.total_analyses + 1;
+      const newAvg =
+        (existing.avg_abuse_score * existing.total_analyses + abuseScore) / newTotal;
+
+      await supabaseAdmin
+        .from("company_rankings")
+        .update({
+          avg_abuse_score: Math.round(newAvg * 10) / 10,
+          total_analyses: newTotal,
+          top_issues: topIssues,
+          last_analysis_at: new Date().toISOString(),
+        })
+        .eq("id", existing.id);
+    } else {
+      await supabaseAdmin.from("company_rankings").insert({
+        company_name: companyName,
+        avg_abuse_score: abuseScore,
+        total_analyses: 1,
+        top_issues: topIssues,
+        last_analysis_at: new Date().toISOString(),
+      });
+    }
   }
 
   return {
