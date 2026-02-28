@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" data-theme="light">
+    <html lang="pt-BR" data-theme="inclusivai">
       <body className="font-sans antialiased">
         <AppProvider>
           <div className="min-h-screen bg-base-200">
