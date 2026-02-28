@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import { apiRunAnalysis, apiGetAnalysis, apiGetShareHash, ApiError } from "@/lib/api";
+import { fetchAndShareImage } from "@/lib/share-image";
 import StepIndicator from "@/components/StepIndicator";
 import AudioPlayer from "@/components/AudioPlayer";
 import QAPanel from "@/components/QAPanel";
@@ -24,7 +25,6 @@ import type {
 } from "@/types";
 import { computeProtectionScore } from "@/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8787";
 const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
 
 // ─── Main Page ───
@@ -307,27 +307,7 @@ export default function ResultsPage() {
                   setSharingImage(true);
                   try {
                     const { hash } = await apiGetShareHash(display.analysisId);
-                    const res = await fetch(
-                      `${API_URL}/api/share/${display.analysisId}/image?hash=${hash}`
-                    );
-                    if (!res.ok) throw new Error("Failed to generate image");
-                    const blob = await res.blob();
-                    const file = new File([blob], "analise-clausula-oculta.png", {
-                      type: "image/png",
-                    });
-                    if (navigator.canShare?.({ files: [file] })) {
-                      await navigator.share({
-                        title: "Análise - Cláusula Oculta",
-                        files: [file],
-                      });
-                    } else {
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement("a");
-                      a.href = url;
-                      a.download = "analise-clausula-oculta.png";
-                      a.click();
-                      URL.revokeObjectURL(url);
-                    }
+                    await fetchAndShareImage(display.analysisId, hash);
                   } catch {
                     alert("Erro ao gerar imagem");
                   } finally {

@@ -1,12 +1,7 @@
 import satori from "satori";
-import { Resvg, initWasm } from "@resvg/resvg-wasm";
-// @ts-expect-error — wrangler bundles .wasm as CompiledWasm module
-import resvgWasm from "../../node_modules/@resvg/resvg-wasm/index_bg.wasm";
 import type { MistralClient } from "./mistral";
 import { MINISTRAL_8B } from "./mistral";
 import { loadFonts } from "./fonts";
-
-let wasmInitialized = false;
 
 const ANALYSIS_TYPE_LABELS: Record<string, string> = {
   tos: "Termos de Uso",
@@ -51,12 +46,12 @@ Resumo da análise: ${rawSummary.slice(0, 500)}`,
   return data.frase_compartilhamento;
 }
 
-// ─── Render PNG card ───
+// ─── Render SVG card (satori works natively in CF Workers) ───
 
 function getScoreColor(score: number): string {
-  if (score >= 70) return "#22c55e"; // green
-  if (score >= 40) return "#eab308"; // yellow
-  return "#ef4444"; // red
+  if (score >= 70) return "#22c55e";
+  if (score >= 40) return "#eab308";
+  return "#ef4444";
 }
 
 function getScoreLabel(score: number): string {
@@ -65,14 +60,14 @@ function getScoreLabel(score: number): string {
   return "Alto Risco";
 }
 
-export async function renderShareCard(opts: {
+export async function renderShareCardSvg(opts: {
   documentTitle: string;
   analysisType: string;
   protectionScore: number;
   socialSummary: string;
   date: string;
   kv: KVNamespace;
-}): Promise<ArrayBuffer> {
+}): Promise<string> {
   const { documentTitle, analysisType, protectionScore, socialSummary, date, kv } = opts;
 
   const scoreColor = getScoreColor(protectionScore);
@@ -84,7 +79,6 @@ export async function renderShareCard(opts: {
 
   const fonts = await loadFonts(kv);
 
-  // satori expects React-like element objects
   const card = {
     type: "div",
     props: {
@@ -292,25 +286,9 @@ export async function renderShareCard(opts: {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const svg = await satori(card as any, {
+  return satori(card as any, {
     width: 1200,
     height: 630,
     fonts,
   });
-
-  // Initialize WASM once (bundled via wrangler CompiledWasm rule)
-  if (!wasmInitialized) {
-    try {
-      await initWasm(resvgWasm);
-    } catch {
-      // Already initialized (e.g. in a long-running worker)
-    }
-    wasmInitialized = true;
-  }
-
-  const resvg = new Resvg(svg, {
-    fitTo: { mode: "width", value: 1200 },
-  });
-  const pngData = resvg.render();
-  return pngData.asPng().buffer as ArrayBuffer;
 }

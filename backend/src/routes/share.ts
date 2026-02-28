@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { AppEnv } from "../types";
 import { createSupabaseAdmin } from "../services/supabase";
 import { createMistralClient } from "../services/mistral";
-import { generateSocialSummary, renderShareCard } from "../services/share-image";
+import { generateSocialSummary, renderShareCardSvg } from "../services/share-image";
 
 const share = new Hono<AppEnv>();
 
@@ -129,7 +129,8 @@ share.get("/:analysisId/og", async (c) => {
   });
 });
 
-// GET /api/share/:analysisId/image?hash=xxx — public, render share PNG card
+// GET /api/share/:analysisId/image?hash=xxx — public, render share card SVG
+// Frontend converts SVG → PNG via canvas for sharing
 share.get("/:analysisId/image", async (c) => {
   const analysisId = c.req.param("analysisId");
   const hash = c.req.query("hash");
@@ -144,12 +145,12 @@ share.get("/:analysisId/image", async (c) => {
   }
 
   // Check KV cache
-  const cacheKey = `share-image:${analysisId}`;
-  const cached = await c.env.INCLUSIVAI_CACHE.get(cacheKey, "arrayBuffer");
+  const cacheKey = `share-svg:${analysisId}`;
+  const cached = await c.env.INCLUSIVAI_CACHE.get(cacheKey, "text");
   if (cached) {
     return new Response(cached, {
       headers: {
-        "Content-Type": "image/png",
+        "Content-Type": "image/svg+xml",
         "Cache-Control": "public, max-age=604800",
       },
     });
@@ -186,12 +187,11 @@ share.get("/:analysisId/image", async (c) => {
       rawSummary
     );
   } catch {
-    // Fallback to raw summary truncated
     socialSummary = rawSummary.length > 120 ? rawSummary.slice(0, 117) + "..." : rawSummary;
   }
 
-  // Render PNG
-  const png = await renderShareCard({
+  // Render SVG via satori
+  const svg = await renderShareCardSvg({
     documentTitle,
     analysisType: analysis.analysis_type as string,
     protectionScore,
@@ -200,14 +200,14 @@ share.get("/:analysisId/image", async (c) => {
     kv: c.env.INCLUSIVAI_CACHE,
   });
 
-  // Cache PNG in KV (7-day TTL)
+  // Cache SVG in KV (7-day TTL)
   c.executionCtx.waitUntil(
-    c.env.INCLUSIVAI_CACHE.put(cacheKey, png, { expirationTtl: 7 * 24 * 60 * 60 })
+    c.env.INCLUSIVAI_CACHE.put(cacheKey, svg, { expirationTtl: 7 * 24 * 60 * 60 })
   );
 
-  return new Response(png, {
+  return new Response(svg, {
     headers: {
-      "Content-Type": "image/png",
+      "Content-Type": "image/svg+xml",
       "Cache-Control": "public, max-age=604800",
     },
   });

@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiGetAnalysis, apiGetDocument, apiGetShareHash } from "@/lib/api";
+import { fetchAndShareImage } from "@/lib/share-image";
 import AudioPlayer from "@/components/AudioPlayer";
 import {
   TosResult,
@@ -33,8 +34,6 @@ import {
   type DocType,
   type AnalysisType,
 } from "@/types";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8787";
 
 export default function AnalysisDetailPage() {
   const router = useRouter();
@@ -95,28 +94,7 @@ export default function AnalysisDetailPage() {
     setSharingImage(true);
     try {
       const { hash } = await apiGetShareHash(analysis.id);
-      const res = await fetch(
-        `${API_URL}/api/share/${analysis.id}/image?hash=${hash}`
-      );
-      if (!res.ok) throw new Error("Failed to generate image");
-      const blob = await res.blob();
-      const file = new File([blob], "analise-clausula-oculta.png", {
-        type: "image/png",
-      });
-
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          title: "Análise - Cláusula Oculta",
-          files: [file],
-        });
-      } else {
-        const url = URL.createObjectURL(blob);
-        const a = window.document.createElement("a");
-        a.href = url;
-        a.download = "analise-clausula-oculta.png";
-        a.click();
-        URL.revokeObjectURL(url);
-      }
+      await fetchAndShareImage(analysis.id, hash);
     } catch {
       alert("Erro ao gerar imagem");
     } finally {
