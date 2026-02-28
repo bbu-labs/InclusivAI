@@ -9,6 +9,7 @@ import analyzeRoutes from "./routes/analyze";
 import rankingRoutes from "./routes/ranking";
 import shareRoutes from "./routes/share";
 import demoRoutes from "./routes/demo";
+import docsRoutes from "./routes/docs";
 
 const app = new Hono<AppEnv>();
 
@@ -22,6 +23,9 @@ app.use(
     maxAge: 86400,
   })
 );
+
+// API docs (public, before auth middleware)
+app.route("/api/docs", docsRoutes);
 
 // Auth middleware on all /api routes
 app.use("/api/*", authMiddleware);
