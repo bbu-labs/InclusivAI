@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import type { AppEnv } from "./types";
+import { authMiddleware } from "./middleware/auth";
+import authRoutes from "./routes/auth";
 
 const app = new Hono<AppEnv>();
 
@@ -16,10 +18,16 @@ app.use(
   })
 );
 
+// Auth middleware on all /api routes
+app.use("/api/*", authMiddleware);
+
 // Health check
 app.get("/health", (c) => {
   return c.json({ status: "ok" });
 });
+
+// Routes
+app.route("/api/auth", authRoutes);
 
 // Global error handler
 app.onError((err, c) => {
