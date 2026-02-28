@@ -83,6 +83,74 @@ documents.get("/:id", async (c) => {
   return c.json({ document: data });
 });
 
+// POST /api/documents/upload — file upload (PDF or image)
+documents.post("/upload", async (c) => {
+  const user = c.get("user")!;
+  const supabaseAdmin = c.get("supabaseAdmin");
+
+  const body = await c.req.parseBody();
+  const file = body["file"];
+
+  if (!file || !(file instanceof File)) {
+    return c.json({ error: "Arquivo é obrigatório" }, 400);
+  }
+
+  // Validate file size (5MB limit)
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+  if (file.size > MAX_FILE_SIZE) {
+    return c.json(
+      { error: "Arquivo muito grande", detail: "Tamanho máximo: 5MB" },
+      400
+    );
+  }
+
+  // Detect content type
+  const contentType = file.type;
+  const isPdf = contentType === "application/pdf";
+  const isImage = contentType.startsWith("image/");
+
+  if (!isPdf && !isImage) {
+    return c.json(
+      { error: "Tipo de arquivo não suportado", detail: "Envie PDF ou imagem (JPG, PNG)" },
+      400
+    );
+  }
+
+  const sourceType = isPdf ? "pdf_upload" : "image_upload";
+  const filePath = `uploads/${user.id}/${Date.now()}_${file.name}`;
+
+  // Upload to Supabase Storage
+  const fileBuffer = await file.arrayBuffer();
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from("uploads")
+    .upload(filePath, fileBuffer, { contentType });
+
+  if (uploadError) {
+    return c.json({ error: "Erro ao fazer upload do arquivo" }, 500);
+  }
+
+  // Save document record
+  const title = (body["title"] as string) || file.name.replace(/\.[^.]+$/, "");
+
+  const { data, error } = await supabaseAdmin
+    .from("documents")
+    .insert({
+      user_id: user.id,
+      title,
+      source_type: sourceType,
+      file_path: filePath,
+      file_size_bytes: file.size,
+    })
+    .select("id, title, doc_type, source_type, file_path, created_at")
+    .single();
+
+  if (error) {
+    return c.json({ error: "Erro ao salvar documento" }, 500);
+  }
+
+  return c.json({ document: data }, 201);
+});
+
 // DELETE /api/documents/:id — soft delete
 documents.delete("/:id", async (c) => {
   const user = c.get("user")!;

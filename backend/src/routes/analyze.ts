@@ -63,8 +63,13 @@ analyze.post(
       return c.json({ error: "Documento não encontrado" }, 404);
     }
 
-    if (!doc.raw_text) {
+    // For text_input, raw_text must exist; for file uploads, file_path must exist
+    const isFileUpload = doc.source_type === "pdf_upload" || doc.source_type === "image_upload";
+    if (!isFileUpload && !doc.raw_text) {
       return c.json({ error: "Documento sem texto para analisar" }, 400);
+    }
+    if (isFileUpload && !doc.file_path) {
+      return c.json({ error: "Arquivo do documento não encontrado" }, 400);
     }
 
     const mistralClient = createMistralClient(c.env.MISTRAL_API_KEY);
@@ -72,7 +77,8 @@ analyze.post(
     const result = await analyzeDocument(
       {
         sourceType: doc.source_type,
-        content: doc.raw_text,
+        content: doc.raw_text || "",
+        filePath: doc.file_path || undefined,
         userId: user.id,
         documentId,
         simplificationLevel: simplification_level,

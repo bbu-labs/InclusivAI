@@ -2,6 +2,7 @@ import { runAgent, type AgentResult } from "./base";
 import { READER_SYSTEM_PROMPT, READER_USER_PROMPT, READER_IMAGE_PROMPT } from "../prompts/reader";
 import { MINISTRAL_8B, PIXTRAL, type MistralClient } from "../services/mistral";
 import { truncateToTokens } from "../lib/token-utils";
+import { extractTextFromPdf } from "../services/pdf";
 
 const INPUT_TOKEN_LIMIT = 32000;
 const OUTPUT_TOKEN_LIMIT = 4096;
@@ -35,6 +36,29 @@ export function readFromText(
       OUTPUT_TOKEN_LIMIT
     )
   );
+}
+
+export async function readFromPdf(
+  pdfBytes: ArrayBuffer,
+  mistralClient: MistralClient
+): Promise<AgentResult<StructuredDocument>> {
+  const { text, needsOcr } = await extractTextFromPdf(pdfBytes);
+
+  if (needsOcr) {
+    // Scanned PDF — convert first page to image would need a separate service
+    // For now, return error suggesting image upload instead
+    return {
+      success: false,
+      data: null,
+      error: "PDF escaneado detectado. Por favor, envie como imagem para OCR.",
+      tokensInput: 0,
+      tokensOutput: 0,
+      modelUsed: MINISTRAL_8B,
+      durationMs: 0,
+    };
+  }
+
+  return readFromText(text, mistralClient);
 }
 
 export function readFromImage(

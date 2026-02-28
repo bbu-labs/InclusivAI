@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MistralClient } from "../services/mistral";
 import type { AnalysisType, SimplificationLevel, SourceType } from "../types";
-import { readFromText, readFromImage } from "./reader";
+import { readFromText, readFromImage, readFromPdf } from "./reader";
 import { simplifyDocument, type SimplifierResult } from "./simplifier";
 
 // Cost per million tokens (USD) — Mistral pricing
@@ -18,7 +18,8 @@ function estimateCost(model: string, tokensIn: number, tokensOut: number): numbe
 
 export type PipelineInput = {
   sourceType: SourceType;
-  content: string; // raw text, or base64 for images
+  content: string; // raw text for text_input; ignored for file uploads
+  filePath?: string; // Supabase storage path for pdf_upload/image_upload
   mimeType?: string; // for image uploads
   userId: string;
   documentId: string;
@@ -48,8 +49,16 @@ export async function analyzeDocument(
   // Step 1: Reader Agent → structured_data
   let structuredText: string;
 
-  if (input.sourceType === "image_upload" && input.mimeType) {
-    const readerResult = await readFromImage(input.content, input.mimeType, mistralClient);
+  if (input.sourceType === "pdf_upload" && input.filePath) {
+    // Download PDF from Supabase Storage → extract text → Reader
+    const { data: fileData, error: dlError } = await supabaseAdmin.storage
+      .from("uploads")
+      .download(input.filePath);
+    if (dlError || !fileData) {
+      throw new Error("Failed to download PDF from storage");
+    }
+    const pdfBytes = await fileData.arrayBuffer();
+    const readerResult = await readFromPdf(pdfBytes, mistralClient);
     if (!readerResult.success || !readerResult.data) {
       throw new Error(`Reader agent failed: ${readerResult.error}`);
     }
@@ -58,7 +67,38 @@ export async function analyzeDocument(
     totalCost += estimateCost(readerResult.modelUsed, readerResult.tokensInput, readerResult.tokensOutput);
     structuredText = readerResult.data.texto_completo;
 
-    // Step 2: Update document with structured data
+    await supabaseAdmin
+      .from("documents")
+      .update({
+        raw_text: readerResult.data.texto_completo,
+        structured_data: readerResult.data,
+        title: readerResult.data.titulo,
+        doc_type: readerResult.data.tipo_documento,
+      })
+      .eq("id", input.documentId);
+  } else if (input.sourceType === "image_upload" && input.filePath) {
+    // Download image from Supabase Storage → base64 → Pixtral OCR
+    const { data: fileData, error: dlError } = await supabaseAdmin.storage
+      .from("uploads")
+      .download(input.filePath);
+    if (dlError || !fileData) {
+      throw new Error("Failed to download image from storage");
+    }
+    const arrayBuf = await fileData.arrayBuffer();
+    const base64 = btoa(
+      new Uint8Array(arrayBuf).reduce((s, b) => s + String.fromCharCode(b), "")
+    );
+    const mimeType = input.mimeType || "image/jpeg";
+
+    const readerResult = await readFromImage(base64, mimeType, mistralClient);
+    if (!readerResult.success || !readerResult.data) {
+      throw new Error(`Reader agent failed: ${readerResult.error}`);
+    }
+    totalTokensIn += readerResult.tokensInput;
+    totalTokensOut += readerResult.tokensOutput;
+    totalCost += estimateCost(readerResult.modelUsed, readerResult.tokensInput, readerResult.tokensOutput);
+    structuredText = readerResult.data.texto_completo;
+
     await supabaseAdmin
       .from("documents")
       .update({
@@ -69,7 +109,7 @@ export async function analyzeDocument(
       })
       .eq("id", input.documentId);
   } else {
-    // text_input or pdf_upload (already extracted text)
+    // text_input — raw text already available
     const readerResult = await readFromText(input.content, mistralClient);
     if (!readerResult.success || !readerResult.data) {
       throw new Error(`Reader agent failed: ${readerResult.error}`);
@@ -79,7 +119,6 @@ export async function analyzeDocument(
     totalCost += estimateCost(readerResult.modelUsed, readerResult.tokensInput, readerResult.tokensOutput);
     structuredText = readerResult.data.texto_completo;
 
-    // Step 2: Update document with structured data
     await supabaseAdmin
       .from("documents")
       .update({
