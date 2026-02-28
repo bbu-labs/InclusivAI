@@ -8,6 +8,7 @@ import documentRoutes from "./routes/documents";
 import analyzeRoutes from "./routes/analyze";
 import rankingRoutes from "./routes/ranking";
 import shareRoutes from "./routes/share";
+import demoRoutes from "./routes/demo";
 
 const app = new Hono<AppEnv>();
 
@@ -36,6 +37,7 @@ app.route("/api/documents", documentRoutes);
 app.route("/api/analyze", analyzeRoutes);
 app.route("/api/ranking", rankingRoutes);
 app.route("/api/share", shareRoutes);
+app.route("/api/demo", demoRoutes);
 
 // Global error handler
 app.onError((err, c) => {

@@ -1,4 +1,4 @@
-name = "InclusivAI-api"
+name = "inclusivai-api"
 main = "src/index.ts"
 compatibility_date = "2025-02-10"
 compatibility_flags = ["nodejs_compat"]
