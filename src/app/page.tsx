@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useApp } from "@/contexts/AppContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import {
   IoLink,
@@ -28,6 +30,7 @@ import { motion } from "framer-motion";
 export default function Home() {
   const router = useRouter();
   const { reset } = useApp();
+  const { session, user, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -125,19 +128,66 @@ export default function Home() {
                 Como Funciona
               </button>
               <button onClick={() => scrollTo("profiles")} className={`transition-colors ${
-                isScrolled 
-                  ? "hover:text-gray-600" 
+                isScrolled
+                  ? "hover:text-gray-600"
                   : "hover:text-secondary"
               }`}>
                 Pra quem é
               </button>
+              <Link href="/ranking" className={`transition-colors ${
+                isScrolled
+                  ? "hover:text-gray-600"
+                  : "hover:text-secondary"
+              }`}>
+                Ranking
+              </Link>
             </div>
-            <button
-              onClick={handleSelect}
-              className="px-5 py-2 bg-secondary text-secondary-foreground font-semibold text-sm rounded-lg hover:opacity-90 transition-opacity"
-            >
-              Analisar
-            </button>
+            {session ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/history"
+                  className={`hidden md:block text-sm font-medium transition-colors ${
+                    isScrolled ? "text-gray-400 hover:text-gray-600" : "text-white/80 hover:text-secondary"
+                  }`}
+                >
+                  Histórico
+                </Link>
+                <span className={`hidden md:block text-xs ${isScrolled ? "text-gray-400" : "text-white/60"}`}>
+                  {user?.email}
+                </span>
+                <button
+                  onClick={() => logout()}
+                  className={`text-sm font-medium transition-colors ${
+                    isScrolled ? "text-gray-400 hover:text-gray-600" : "text-white/80 hover:text-secondary"
+                  }`}
+                >
+                  Sair
+                </button>
+                <button
+                  onClick={handleSelect}
+                  className="px-5 py-2 bg-secondary text-secondary-foreground font-semibold text-sm rounded-lg hover:opacity-90 transition-opacity"
+                >
+                  Analisar
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/login"
+                  className={`text-sm font-medium transition-colors ${
+                    isScrolled ? "text-gray-400 hover:text-gray-600" : "text-white/80 hover:text-secondary"
+                  }`}
+                >
+                  Entrar
+                </Link>
+                <button
+                  onClick={handleSelect}
+                  className="px-5 py-2 bg-secondary text-secondary-foreground font-semibold text-sm rounded-lg hover:opacity-90 transition-opacity"
+                >
+                  Analisar
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>

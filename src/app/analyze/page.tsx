@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
+import { useAuth } from "@/contexts/AuthContext";
 import StepIndicator from "@/components/StepIndicator";
 import {
   IoLink,
@@ -41,7 +42,8 @@ function formatFileSize(bytes: number): string {
 
 export default function AnalyzePage() {
   const router = useRouter();
-  const { setRawInput, reset } = useApp();
+  const { setRawInput, setInputMethod, reset } = useApp();
+  const { session } = useAuth();
   const [selectedMode, setSelectedMode] = useState<AnalysisMode | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   
@@ -104,6 +106,7 @@ export default function AnalyzePage() {
   };
 
   const handleUrlSubmit = () => {
+    if (!session) { router.push("/login"); return; }
     if (!url.trim()) {
       setUrlError("Por favor, insira uma URL.");
       return;
@@ -113,6 +116,7 @@ export default function AnalyzePage() {
       return;
     }
     setUrlError("");
+    setInputMethod("url");
     setRawInput(url);
     router.push("/processing");
   };
@@ -135,7 +139,9 @@ export default function AnalyzePage() {
   };
 
   const handleCameraSubmit = () => {
+    if (!session) { router.push("/login"); return; }
     if (preview) {
+      setInputMethod("camera");
       setRawInput(preview, "foto_documento.jpg");
       router.push("/processing");
     }
@@ -161,10 +167,12 @@ export default function AnalyzePage() {
   }, []);
 
   const handleUploadSubmit = () => {
+    if (!session) { router.push("/login"); return; }
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (event) => {
+      setInputMethod("file");
       setRawInput(event.target?.result as string, file.name);
       router.push("/processing");
     };

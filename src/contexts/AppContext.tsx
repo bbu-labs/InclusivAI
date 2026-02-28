@@ -1,16 +1,16 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
-import { AppState, InputMethod, DocumentType, AnalysisResult } from "@/types";
+import type { AppState, InputMethod, ApiDocument, AnalysisDisplay } from "@/types";
 
 interface AppContextType {
   state: AppState;
   setInputMethod: (method: InputMethod) => void;
   setRawInput: (input: string, fileName?: string) => void;
-  setExtractedText: (text: string) => void;
-  setDocumentType: (type: DocumentType) => void;
-  confirmDocument: () => void;
-  setAnalysisResult: (result: AnalysisResult) => void;
+  setDocumentId: (id: string) => void;
+  setAnalysisId: (id: string) => void;
+  setDocument: (doc: ApiDocument) => void;
+  setAnalysisDisplay: (display: AnalysisDisplay) => void;
   reset: () => void;
 }
 
@@ -18,10 +18,10 @@ const initialState: AppState = {
   inputMethod: null,
   rawInput: null,
   fileName: null,
-  extractedText: null,
-  documentType: null,
-  isConfirmed: false,
-  analysisResult: null,
+  documentId: null,
+  analysisId: null,
+  document: null,
+  analysisDisplay: null,
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -37,20 +37,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, rawInput: input, fileName: fileName || null }));
   };
 
-  const setExtractedText = (text: string) => {
-    setState((prev) => ({ ...prev, extractedText: text }));
+  const setDocumentId = (id: string) => {
+    setState((prev) => ({ ...prev, documentId: id }));
   };
 
-  const setDocumentType = (type: DocumentType) => {
-    setState((prev) => ({ ...prev, documentType: type }));
+  const setAnalysisId = (id: string) => {
+    setState((prev) => ({ ...prev, analysisId: id }));
   };
 
-  const confirmDocument = () => {
-    setState((prev) => ({ ...prev, isConfirmed: true }));
+  const setDocument = (doc: ApiDocument) => {
+    setState((prev) => ({ ...prev, document: doc, documentId: doc.id }));
   };
 
-  const setAnalysisResult = (result: AnalysisResult) => {
-    setState((prev) => ({ ...prev, analysisResult: result }));
+  const setAnalysisDisplay = (display: AnalysisDisplay) => {
+    setState((prev) => ({ ...prev, analysisDisplay: display, analysisId: display.analysisId }));
   };
 
   const reset = () => {
@@ -63,10 +63,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         state,
         setInputMethod,
         setRawInput,
-        setExtractedText,
-        setDocumentType,
-        confirmDocument,
-        setAnalysisResult,
+        setDocumentId,
+        setAnalysisId,
+        setDocument,
+        setAnalysisDisplay,
         reset,
       }}
     >

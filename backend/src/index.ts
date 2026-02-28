@@ -17,9 +17,16 @@ const app = new Hono<AppEnv>();
 app.use(
   "*",
   cors({
-    origin: ["http://localhost:3000", "http://localhost:5173"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "https://clausula-oculta.pages.dev",
+      "https://clausulaoculta.com.br",
+      "https://www.clausulaoculta.com.br",
+    ],
     allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
     maxAge: 86400,
   })
 );
