@@ -21,6 +21,8 @@ app.use(
       "http://localhost:3000",
       "http://localhost:5173",
       "https://clausula-oculta.pages.dev",
+      "https://clausula-oculta.bmtec.workers.dev",
+      "https://inclusivai.bbu.app.br",
       "https://clausulaoculta.com.br",
       "https://www.clausulaoculta.com.br",
     ],
