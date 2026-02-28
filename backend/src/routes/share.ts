@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../types";
 import { createSupabaseAdmin } from "../services/supabase";
+import { createMistralClient } from "../services/mistral";
+import { generateSocialSummary, renderShareCard } from "../services/share-image";
 
 const share = new Hono<AppEnv>();
 
@@ -123,6 +125,90 @@ share.get("/:analysisId/og", async (c) => {
       description,
       type: "article",
       url: `https://inclusivai.com.br/share/${analysisId}?hash=${hash}`,
+    },
+  });
+});
+
+// GET /api/share/:analysisId/image?hash=xxx — public, render share PNG card
+share.get("/:analysisId/image", async (c) => {
+  const analysisId = c.req.param("analysisId");
+  const hash = c.req.query("hash");
+
+  if (!hash) {
+    return c.json({ error: "Hash de compartilhamento necessário" }, 400);
+  }
+
+  const valid = await verifyShareHash(analysisId, hash, c.env.SHARE_HASH_SECRET);
+  if (!valid) {
+    return c.json({ error: "Link de compartilhamento inválido" }, 403);
+  }
+
+  // Check KV cache
+  const cacheKey = `share-image:${analysisId}`;
+  const cached = await c.env.INCLUSIVAI_CACHE.get(cacheKey, "arrayBuffer");
+  if (cached) {
+    return new Response(cached, {
+      headers: {
+        "Content-Type": "image/png",
+        "Cache-Control": "public, max-age=604800",
+      },
+    });
+  }
+
+  // Fetch analysis data
+  const supabaseAdmin = createSupabaseAdmin(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_ROLE_KEY);
+
+  const { data: analysis, error } = await supabaseAdmin
+    .from("analyses")
+    .select("id, analysis_type, abuse_score, summary, created_at, documents(title, doc_type)")
+    .eq("id", analysisId)
+    .single();
+
+  if (error || !analysis) {
+    return c.json({ error: "Análise não encontrada" }, 404);
+  }
+
+  const summary = analysis.summary as Record<string, unknown>;
+  const docs = analysis.documents as unknown as { title: string; doc_type: string } | null;
+  const documentTitle = docs?.title || "Documento analisado";
+  const rawSummary = (summary.resumo || summary.resumo_executivo || summary.explicacao || "") as string;
+  const abuseScore = analysis.abuse_score as number | null;
+  const protectionScore = abuseScore !== null ? Math.round((1 - abuseScore / 10) * 100) : 50;
+
+  // Generate social summary via Mistral
+  const mistralClient = createMistralClient(c.env.MISTRAL_API_KEY);
+  let socialSummary: string;
+  try {
+    socialSummary = await generateSocialSummary(
+      mistralClient,
+      analysis.analysis_type as string,
+      abuseScore,
+      rawSummary
+    );
+  } catch {
+    // Fallback to raw summary truncated
+    socialSummary = rawSummary.length > 120 ? rawSummary.slice(0, 117) + "..." : rawSummary;
+  }
+
+  // Render PNG
+  const png = await renderShareCard({
+    documentTitle,
+    analysisType: analysis.analysis_type as string,
+    protectionScore,
+    socialSummary,
+    date: analysis.created_at as string,
+    kv: c.env.INCLUSIVAI_CACHE,
+  });
+
+  // Cache PNG in KV (7-day TTL)
+  c.executionCtx.waitUntil(
+    c.env.INCLUSIVAI_CACHE.put(cacheKey, png, { expirationTtl: 7 * 24 * 60 * 60 })
+  );
+
+  return new Response(png, {
+    headers: {
+      "Content-Type": "image/png",
+      "Cache-Control": "public, max-age=604800",
     },
   });
 });

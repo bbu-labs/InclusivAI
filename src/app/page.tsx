@@ -145,12 +145,12 @@ export default function Home() {
             {session ? (
               <div className="flex items-center gap-3">
                 <Link
-                  href="/history"
+                  href="/analyses"
                   className={`hidden md:block text-sm font-medium transition-colors ${
                     isScrolled ? "text-gray-400 hover:text-gray-600" : "text-white/80 hover:text-secondary"
                   }`}
                 >
-                  Histórico
+                  Minhas Análises
                 </Link>
                 <span className={`hidden md:block text-xs ${isScrolled ? "text-gray-400" : "text-white/60"}`}>
                   {user?.email}

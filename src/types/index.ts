@@ -160,6 +160,24 @@ export interface ApiShareCard {
   createdAt: string;
 }
 
+// ─── Analysis list item (from /api/analyses) ───
+
+export interface ApiAnalysisListItem {
+  id: string;
+  documentTitle: string;
+  documentType: string;
+  analysisType: AnalysisType;
+  abuseScore: number | null;
+  summaryPreview: string;
+  createdAt: string;
+}
+
+export const ANALYSIS_TYPE_LABELS: Record<AnalysisType, string> = {
+  tos: "Termos de Uso",
+  scam: "Detecção de Golpe",
+  general: "Análise Geral",
+};
+
 // ─── UI helper type ───
 
 export interface AnalysisDisplay {

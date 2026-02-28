@@ -4,6 +4,7 @@ import type {
   ApiProfile,
   ApiSession,
   ApiAnalysis,
+  ApiAnalysisListItem,
   ApiPipelineResult,
   ApiQuestion,
   ApiRanking,
@@ -170,6 +171,12 @@ export async function apiGetQuestions(analysisId: string) {
     "GET",
     `/api/analyze/${analysisId}/questions`
   );
+}
+
+// ─── Analyses ───
+
+export async function apiListAnalyses() {
+  return request<{ analyses: ApiAnalysisListItem[] }>("GET", "/api/analyses");
 }
 
 // ─── Ranking ───

@@ -8,6 +8,7 @@ import documentRoutes from "./routes/documents";
 import analyzeRoutes from "./routes/analyze";
 import rankingRoutes from "./routes/ranking";
 import shareRoutes from "./routes/share";
+import analysesRoutes from "./routes/analyses";
 import demoRoutes from "./routes/demo";
 import docsRoutes from "./routes/docs";
 
@@ -50,6 +51,7 @@ app.route("/api/documents", documentRoutes);
 app.route("/api/analyze", analyzeRoutes);
 app.route("/api/ranking", rankingRoutes);
 app.route("/api/share", shareRoutes);
+app.route("/api/analyses", analysesRoutes);
 app.route("/api/demo", demoRoutes);
 
 // Global error handler
