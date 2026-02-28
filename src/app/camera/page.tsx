@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import Header from "@/components/Header";
 import StepIndicator from "@/components/StepIndicator";
-import AppShell from "@/components/AppShell";
 import { IoCamera, IoImage, IoArrowForward, IoClose } from "react-icons/io5";
 
 const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
@@ -48,109 +47,135 @@ export default function CameraPage() {
   };
 
   return (
-    <AppShell>
-    <div className="flex flex-col min-h-screen">
-      <Header title="Câmera / Foto" showBack backTo="/" />
-      <StepIndicator steps={STEPS} currentStep={0} />
+    <div className="min-h-screen bg-base-100">
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        <Header title="Câmera / Foto" showBack backTo="/" />
+        <StepIndicator steps={STEPS} currentStep={0} />
 
-      <div className="flex-1 px-6 py-6 flex flex-col">
-        {captureMode === "choose" ? (
-          <>
-            <div className="mb-6">
-              <h2 className="text-lg font-bold mb-1">Capture o documento</h2>
-              <p className="text-sm text-base-content/60">
-                Tire uma foto do documento ou escolha uma imagem da sua galeria.
-              </p>
-            </div>
+        <div className="mt-8 max-w-2xl mx-auto">
+          {captureMode === "choose" ? (
+            <>
+              <div className="text-center mb-8">
+                <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Capture o documento</h2>
+                <p className="text-base-content/60 max-w-xl mx-auto">
+                  Tire uma foto do documento ou escolha uma imagem da sua galeria.
+                </p>
+              </div>
 
-            <div className="flex flex-col gap-4 flex-1 justify-center">
-              {/* Camera capture */}
-              <button
-                className="btn btn-outline btn-lg h-32 flex-col gap-2"
-                onClick={() => cameraInputRef.current?.click()}
-              >
-                <IoCamera className="text-4xl text-primary" />
-                <span className="text-sm">Tirar Foto</span>
-              </button>
-
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-
-              <div className="divider text-xs text-base-content/40">OU</div>
-
-              {/* Gallery */}
-              <button
-                className="btn btn-outline btn-lg h-32 flex-col gap-2"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <IoImage className="text-4xl text-secondary" />
-                <span className="text-sm">Escolher da Galeria</span>
-              </button>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-            </div>
-
-            {/* Tips */}
-            <div className="mt-6 bg-base-200 rounded-xl p-4">
-              <p className="text-xs font-semibold mb-2">Dicas para uma boa captura:</p>
-              <ul className="text-xs text-base-content/60 space-y-1">
-                <li>- Boa iluminação, sem sombras</li>
-                <li>- Documento centralizado e reto</li>
-                <li>- Texto legível e em foco</li>
-              </ul>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="mb-4">
-              <h2 className="text-lg font-bold mb-1">Confira a imagem</h2>
-              <p className="text-sm text-base-content/60">
-                Verifique se o texto está legível antes de prosseguir.
-              </p>
-            </div>
-
-            <div className="relative flex-1 flex items-center justify-center">
-              <div className="relative w-full max-h-96 overflow-hidden rounded-xl border border-base-300">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={preview!}
-                  alt="Preview do documento"
-                  className="w-full h-auto object-contain"
-                />
+              <div className="grid md:grid-cols-2 gap-6 mb-8">
+                {/* Camera capture */}
                 <button
-                  className="btn btn-circle btn-sm btn-error absolute top-2 right-2"
-                  onClick={handleClear}
+                  className="card bg-base-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-base-300"
+                  onClick={() => cameraInputRef.current?.click()}
                 >
-                  <IoClose />
+                  <div className="card-body items-center text-center py-12">
+                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                      <IoCamera className="text-3xl text-primary" />
+                    </div>
+                    <h3 className="card-title text-lg">Tirar Foto</h3>
+                    <p className="text-sm text-base-content/60">
+                      Use a câmera do seu dispositivo
+                    </p>
+                  </div>
+                </button>
+
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+
+                {/* Gallery */}
+                <button
+                  className="card bg-base-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-base-300"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <div className="card-body items-center text-center py-12">
+                    <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mb-4">
+                      <IoImage className="text-3xl text-secondary" />
+                    </div>
+                    <h3 className="card-title text-lg">Escolher da Galeria</h3>
+                    <p className="text-sm text-base-content/60">
+                      Selecione uma foto existente
+                    </p>
+                  </div>
+                </button>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </div>
+
+              {/* Tips */}
+              <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6">
+                <h3 className="font-bold text-primary mb-3 flex items-center gap-2">
+                  <IoCamera className="text-lg" />
+                  Dicas para uma boa captura
+                </h3>
+                <ul className="text-sm text-base-content/70 space-y-2">
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary font-bold">•</span>
+                    Boa iluminação, sem sombras sobre o texto
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary font-bold">•</span>
+                    Documento centralizado e reto na foto
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary font-bold">•</span>
+                    Texto legível e em foco
+                  </li>
+                </ul>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-center mb-6">
+                <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Confira a imagem</h2>
+                <p className="text-base-content/60 max-w-xl mx-auto">
+                  Verifique se o texto está legível antes de prosseguir.
+                </p>
+              </div>
+
+              <div className="bg-base-200 rounded-2xl p-6 mb-6">
+                <div className="relative max-w-lg mx-auto">
+                  <div className="relative overflow-hidden rounded-xl border border-base-300 bg-white">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={preview!}
+                      alt="Preview do documento"
+                      className="w-full h-auto object-contain max-h-96"
+                    />
+                    <button
+                      className="btn btn-circle btn-sm btn-error absolute top-3 right-3 shadow-lg"
+                      onClick={handleClear}
+                    >
+                      <IoClose />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <button className="btn btn-outline btn-lg" onClick={handleClear}>
+                  Tirar outra
+                </button>
+                <button className="btn btn-primary btn-lg gap-2" onClick={handleSubmit}>
+                  Analisar documento
+                  <IoArrowForward />
                 </button>
               </div>
-            </div>
-
-            <div className="mt-6 flex gap-3">
-              <button className="btn btn-outline flex-1" onClick={handleClear}>
-                Tirar outra
-              </button>
-              <button className="btn btn-primary flex-1" onClick={handleSubmit}>
-                Analisar
-                <IoArrowForward />
-              </button>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
     </div>
-    </AppShell>
   );
 }

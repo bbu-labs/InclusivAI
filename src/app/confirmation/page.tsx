@@ -3,10 +3,8 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
-import Header from "@/components/Header";
 import StepIndicator from "@/components/StepIndicator";
-import AppShell from "@/components/AppShell";
-import { IoDocumentText, IoCheckmark, IoClose } from "react-icons/io5";
+import { IoDocumentText, IoCheckmark, IoClose, IoShield } from "react-icons/io5";
 
 const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
 
@@ -40,69 +38,92 @@ export default function ConfirmationPage() {
   if (!state.documentType) return null;
 
   return (
-    <AppShell>
-    <div className="flex flex-col min-h-screen">
-      <Header title="Confirmação" showBack />
-      <StepIndicator steps={STEPS} currentStep={2} />
-
-      <div className="flex-1 px-6 py-8 flex flex-col items-center">
-        {/* Document type card */}
-        <div className="card bg-base-200 w-full mb-6">
-          <div className="card-body items-center text-center">
-            <div className="bg-primary/10 rounded-full p-4 mb-2">
-              <IoDocumentText className="text-4xl text-primary" />
+    <div className="min-h-screen bg-base-100">
+      {/* ───── Navbar ───── */}
+      <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <button
+            onClick={() => router.push("/")}
+            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
+          >
+            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+              <IoShield className="w-5 h-5 text-black" />
             </div>
-            <h2 className="card-title text-lg">Documento Identificado</h2>
-            <div className="badge badge-primary badge-lg mt-2">
-              {DOCUMENT_TYPE_LABELS[state.documentType]}
+            Cláusula Oculta
+          </button>
+          <button
+            onClick={() => router.back()}
+            className="px-4 py-2 bg-base-200 text-base-content font-semibold text-sm rounded-lg hover:bg-base-300 transition-colors"
+          >
+            Voltar
+          </button>
+        </div>
+      </nav>
+
+      {/* ───── Main Content ───── */}
+      <div className="pt-16">
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <StepIndicator steps={STEPS} currentStep={2} />
+
+          <div className="mt-8 max-w-2xl mx-auto">
+          {/* Document type card */}
+          <div className="card bg-base-200 w-full mb-8 shadow-lg">
+            <div className="card-body items-center text-center py-8">
+              <div className="bg-primary/10 rounded-full p-6 mb-4">
+                <IoDocumentText className="text-5xl text-primary" />
+              </div>
+              <h2 className="card-title text-xl mb-2">Documento Identificado</h2>
+              <div className="badge badge-primary badge-lg text-sm px-4 py-3">
+                {DOCUMENT_TYPE_LABELS[state.documentType]}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Preview */}
-        <div className="w-full mb-6">
-          <h3 className="text-sm font-semibold mb-2">Prévia do texto extraído:</h3>
-          <div className="bg-base-200 rounded-xl p-4 max-h-40 overflow-y-auto">
-            <p className="text-xs text-base-content/70 leading-relaxed">
-              {state.extractedText?.slice(0, 500)}
-              {(state.extractedText?.length ?? 0) > 500 && "..."}
+          {/* Preview */}
+          <div className="mb-8">
+            <h3 className="font-bold mb-4 text-lg">Prévia do texto extraído:</h3>
+            <div className="bg-base-200 rounded-2xl p-6 max-h-60 overflow-y-auto">
+              <p className="text-sm text-base-content/70 leading-relaxed">
+                {state.extractedText?.slice(0, 500)}
+                {(state.extractedText?.length ?? 0) > 500 && "..."}
+              </p>
+            </div>
+          </div>
+
+          {/* Confirmation question */}
+          <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 mb-8">
+            <p className="font-bold text-center text-lg mb-2">
+              Este é realmente um documento do tipo{" "}
+              <span className="text-primary">
+                {DOCUMENT_TYPE_LABELS[state.documentType]}
+              </span>
+              ?
+            </p>
+            <p className="text-sm text-base-content/60 text-center">
+              A confirmação ajuda a IA a fazer uma análise mais precisa.
             </p>
           </div>
-        </div>
 
-        {/* Confirmation question */}
-        <div className="w-full bg-warning/10 border border-warning/30 rounded-xl p-4 mb-6">
-          <p className="text-sm font-semibold text-center">
-            Este é realmente um documento do tipo{" "}
-            <span className="text-primary">
-              {DOCUMENT_TYPE_LABELS[state.documentType]}
-            </span>
-            ?
-          </p>
-          <p className="text-xs text-base-content/60 text-center mt-1">
-            A confirmação ajuda a IA a fazer uma análise mais precisa.
-          </p>
-        </div>
-
-        {/* Actions */}
-        <div className="w-full flex gap-3 mt-auto">
-          <button
-            className="btn btn-outline btn-error flex-1"
-            onClick={handleReject}
-          >
-            <IoClose className="text-lg" />
-            Não, voltar
-          </button>
-          <button
-            className="btn btn-primary flex-1"
-            onClick={handleConfirm}
-          >
-            <IoCheckmark className="text-lg" />
-            Sim, analisar
-          </button>
+          {/* Actions */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <button
+              className="btn btn-outline btn-error btn-lg gap-2"
+              onClick={handleReject}
+            >
+              <IoClose className="text-lg" />
+              Não, voltar
+            </button>
+            <button
+              className="btn btn-primary btn-lg gap-2"
+              onClick={handleConfirm}
+            >
+              <IoCheckmark className="text-lg" />
+              Sim, analisar
+            </button>
+          </div>
+          </div>
         </div>
       </div>
     </div>
-    </AppShell>
   );
 }

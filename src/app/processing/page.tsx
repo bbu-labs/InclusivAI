@@ -3,15 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
-import Header from "@/components/Header";
 import StepIndicator from "@/components/StepIndicator";
-import AppShell from "@/components/AppShell";
 import {
   IoDocumentText,
   IoScan,
   IoColorWand,
   IoSearch,
   IoCheckmarkCircle,
+  IoShield,
 } from "react-icons/io5";
 
 const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
@@ -82,78 +81,96 @@ export default function ProcessingPage() {
   }, []);
 
   return (
-    <AppShell>
-    <div className="flex flex-col min-h-screen">
-      <Header title="Processando" />
-      <StepIndicator steps={STEPS} currentStep={1} />
-
-      <div className="flex-1 px-6 py-8 flex flex-col items-center">
-        {/* Spinner */}
-        <div className="my-8">
-          <span className="loading loading-spinner loading-lg text-primary" />
+    <div className="min-h-screen bg-base-100">
+      {/* ───── Navbar ───── */}
+      <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <button
+            onClick={() => router.push("/")}
+            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
+          >
+            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+              <IoShield className="w-5 h-5 text-black" />
+            </div>
+            Cláusula Oculta
+          </button>
+          <span className="text-sm text-base-content/60">Processando...</span>
         </div>
+      </nav>
 
-        <h2 className="text-lg font-bold mb-2 text-center">
-          Analisando seu documento
-        </h2>
-        <p className="text-sm text-base-content/60 text-center mb-8">
-          Aguarde enquanto processamos o conteúdo...
-        </p>
+      {/* ───── Main Content ───── */}
+      <div className="pt-16">
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <StepIndicator steps={STEPS} currentStep={1} />
 
-        {/* Processing steps */}
-        <div className="w-full flex flex-col gap-3">
-          {PROCESSING_STEPS.map((step, index) => {
-            const StepIcon = step.icon;
-            const isCompleted = completedSteps.includes(index);
-            const isCurrent = currentStep === index && !isCompleted;
+          <div className="mt-8 max-w-2xl mx-auto flex flex-col items-center">
+          {/* Spinner */}
+          <div className="my-8">
+            <span className="loading loading-spinner loading-lg text-primary" />
+          </div>
 
-            return (
-              <div
-                key={step.id}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
-                  isCurrent
-                    ? "bg-primary/10 border border-primary/30"
-                    : isCompleted
-                    ? "bg-success/5"
-                    : "opacity-40"
-                }`}
-              >
-                {isCompleted ? (
-                  <IoCheckmarkCircle className="text-xl text-success flex-shrink-0" />
-                ) : isCurrent ? (
-                  <span className="loading loading-spinner loading-sm text-primary flex-shrink-0" />
-                ) : (
-                  <StepIcon className="text-xl text-base-content/30 flex-shrink-0" />
-                )}
-                <span
-                  className={`text-sm ${
+          <h2 className="text-2xl md:text-3xl font-extrabold mb-3 text-center">
+            Analisando seu documento
+          </h2>
+          <p className="text-base-content/60 text-center mb-8 max-w-lg">
+            Aguarde enquanto processamos o conteúdo...
+          </p>
+
+          {/* Processing steps */}
+          <div className="w-full flex flex-col gap-4 bg-base-200 rounded-2xl p-6">
+            {PROCESSING_STEPS.map((step, index) => {
+              const StepIcon = step.icon;
+              const isCompleted = completedSteps.includes(index);
+              const isCurrent = currentStep === index && !isCompleted;
+
+              return (
+                <div
+                  key={step.id}
+                  className={`flex items-center gap-4 p-4 rounded-xl transition-all ${
                     isCurrent
-                      ? "font-semibold text-primary"
+                      ? "bg-primary/10 border border-primary/30 shadow-sm"
                       : isCompleted
-                      ? "text-success"
-                      : ""
+                      ? "bg-success/5 border border-success/20"
+                      : "opacity-40"
                   }`}
                 >
-                  {step.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+                  {isCompleted ? (
+                    <IoCheckmarkCircle className="text-2xl text-success flex-shrink-0" />
+                  ) : isCurrent ? (
+                    <span className="loading loading-spinner loading-md text-primary flex-shrink-0" />
+                  ) : (
+                    <StepIcon className="text-2xl text-base-content/30 flex-shrink-0" />
+                  )}
+                  <span
+                    className={`text-sm font-medium ${
+                      isCurrent
+                        ? "text-primary"
+                        : isCompleted
+                        ? "text-success"
+                        : ""
+                    }`}
+                  >
+                    {step.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
 
-        {/* Progress bar */}
-        <div className="w-full mt-8">
-          <progress
-            className="progress progress-primary w-full"
-            value={completedSteps.length}
-            max={PROCESSING_STEPS.length}
-          />
-          <p className="text-xs text-center text-base-content/50 mt-2">
-            {completedSteps.length} de {PROCESSING_STEPS.length} etapas
-          </p>
+          {/* Progress bar */}
+          <div className="w-full mt-8">
+            <progress
+              className="progress progress-primary w-full h-3"
+              value={completedSteps.length}
+              max={PROCESSING_STEPS.length}
+            />
+            <p className="text-sm text-center text-base-content/50 mt-3">
+              {completedSteps.length} de {PROCESSING_STEPS.length} etapas concluídas
+            </p>
+          </div>
+          </div>
         </div>
       </div>
     </div>
-    </AppShell>
   );
 }

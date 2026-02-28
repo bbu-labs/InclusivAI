@@ -11,8 +11,8 @@ module.exports = {
     themes: [
       {
         inclusivai: {
-          primary: "#6366f1",
-          secondary: "#8b5cf6",
+          primary: "#156579",
+          secondary: "#f6a823",
           accent: "#06b6d4",
           success: "#22c55e",
           warning: "#f59e0b",

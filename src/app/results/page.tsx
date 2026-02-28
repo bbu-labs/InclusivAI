@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
-import Header from "@/components/Header";
 import StepIndicator from "@/components/StepIndicator";
-import AppShell from "@/components/AppShell";
 import {
   IoShieldCheckmark,
   IoWarning,
@@ -14,6 +12,7 @@ import {
   IoShareSocial,
   IoBookmark,
   IoHome,
+  IoShield,
 } from "react-icons/io5";
 import type { AnalysisResult, Clause, RiskLevel } from "@/types";
 
@@ -214,125 +213,167 @@ export default function ResultsPage() {
 
   if (isLoading) {
     return (
-      <AppShell>
-      <div className="flex flex-col min-h-screen">
-        <Header title="Analisando" />
-        <StepIndicator steps={STEPS} currentStep={3} />
-
-        <div className="flex-1 flex flex-col items-center justify-center px-6 gap-6">
-          <span className="loading loading-dots loading-lg text-primary" />
-          <div className="text-center">
-            <h2 className="text-lg font-bold mb-2">Análise profunda em andamento</h2>
-            <p className="text-sm text-base-content/60">
-              A IA está identificando cláusulas, verificando conformidade com o
-              CDC e calculando o score de risco...
-            </p>
+      <div className="min-h-screen bg-base-100">
+        {/* ───── Navbar ───── */}
+        <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
+          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <button
+              onClick={() => router.push("/")}
+              className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+                <IoShield className="w-5 h-5 text-black" />
+              </div>
+              Cláusula Oculta
+            </button>
+            <span className="text-sm text-base-content/60">Analisando...</span>
           </div>
-          <div className="w-full max-w-xs">
-            <progress className="progress progress-primary w-full" />
+        </nav>
+
+        <div className="pt-16">
+          <div className="max-w-4xl mx-auto px-6 py-8">
+            <StepIndicator steps={STEPS} currentStep={3} />
+
+            <div className="mt-8 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-96">
+              <span className="loading loading-dots loading-lg text-primary mb-6" />
+              <div className="text-center">
+                <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Análise profunda em andamento</h2>
+                <p className="text-base-content/60 max-w-lg mx-auto">
+                  A IA está identificando cláusulas, verificando conformidade com o
+                  CDC e calculando o score de risco...
+                </p>
+              </div>
+              <div className="w-full max-w-md mt-8">
+                <progress className="progress progress-primary w-full h-3" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      </AppShell>
     );
   }
 
   if (!result) return null;
 
   return (
-    <AppShell>
-    <div className="flex flex-col min-h-screen">
-      <Header title="Resultado" showBack backTo="/" />
-      <StepIndicator steps={STEPS} currentStep={3} />
-
-      <div className="flex-1 px-6 py-6 flex flex-col gap-6">
-        {/* Document title */}
-        <div className="text-center">
-          <h2 className="text-lg font-bold">{result.documentTitle}</h2>
-          <p className="text-xs text-base-content/50 mt-1">Análise concluída</p>
-        </div>
-
-        {/* Score */}
-        <div className="flex justify-center">
-          <ScoreGauge score={result.overallScore} riskLevel={result.riskLevel} />
-        </div>
-
-        {/* Summary */}
-        <div className="bg-base-200 rounded-xl p-4">
-          <h3 className="font-bold text-sm mb-2">Resumo da Análise</h3>
-          <p className="text-sm text-base-content/70 leading-relaxed">
-            {result.summary}
-          </p>
-        </div>
-
-        {/* CDC Violations */}
-        {result.cdcViolations.length > 0 && (
-          <div className="bg-error/5 border border-error/20 rounded-xl p-4">
-            <h3 className="font-bold text-sm text-error mb-2 flex items-center gap-2">
-              <IoAlert />
-              Possíveis violações do CDC
-            </h3>
-            <ul className="space-y-1">
-              {result.cdcViolations.map((violation, i) => (
-                <li key={i} className="text-xs text-base-content/70 flex gap-2">
-                  <span className="text-error">•</span>
-                  {violation}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Clauses */}
-        <div>
-          <h3 className="font-bold text-sm mb-3">
-            Cláusulas Identificadas ({result.clauses.length})
-          </h3>
-          <div className="flex flex-col gap-3">
-            {result.clauses.map((clause) => (
-              <ClauseCard
-                key={clause.id}
-                clause={clause}
-                onClick={() => router.push(`/clause/${clause.id}`)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Recommendations */}
-        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
-          <h3 className="font-bold text-sm text-primary mb-2">Recomendações</h3>
-          <ul className="space-y-2">
-            {result.recommendations.map((rec, i) => (
-              <li key={i} className="text-xs text-base-content/70 flex gap-2">
-                <span className="text-primary font-bold">{i + 1}.</span>
-                {rec}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-3 pt-2">
-          <button className="btn btn-outline btn-sm flex-1">
-            <IoBookmark />
-            Salvar
+    <div className="min-h-screen bg-base-100">
+      {/* ───── Navbar ───── */}
+      <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <button
+            onClick={() => router.push("/")}
+            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
+          >
+            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+              <IoShield className="w-5 h-5 text-black" />
+            </div>
+            Cláusula Oculta
           </button>
-          <button className="btn btn-outline btn-sm flex-1">
-            <IoShareSocial />
-            Compartilhar
+          <button
+            onClick={() => router.push("/")}
+            className="px-4 py-2 bg-base-200 text-base-content font-semibold text-sm rounded-lg hover:bg-base-300 transition-colors"
+          >
+            Nova Análise
           </button>
         </div>
+      </nav>
 
-        <button
-          className="btn btn-primary w-full mt-2"
-          onClick={() => router.push("/")}
-        >
-          <IoHome />
-          Analisar outro documento
-        </button>
+      {/* ───── Main Content ───── */}
+      <div className="pt-16">
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <StepIndicator steps={STEPS} currentStep={3} />
+
+          <div className="mt-8 max-w-3xl mx-auto">
+          {/* Document title */}
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-extrabold mb-2">{result.documentTitle}</h2>
+            <p className="text-base-content/50">Análise concluída</p>
+          </div>
+
+          {/* Score */}
+          <div className="flex justify-center mb-8">
+            <ScoreGauge score={result.overallScore} riskLevel={result.riskLevel} />
+          </div>
+
+          <div className="grid gap-6">
+            {/* Summary */}
+            <div className="bg-base-200 rounded-2xl p-6">
+              <h3 className="font-bold text-lg mb-4">Resumo da Análise</h3>
+              <p className="text-base-content/70 leading-relaxed">
+                {result.summary}
+              </p>
+            </div>
+
+            {/* CDC Violations */}
+            {result.cdcViolations.length > 0 && (
+              <div className="bg-error/5 border border-error/20 rounded-2xl p-6">
+                <h3 className="font-bold text-lg text-error mb-4 flex items-center gap-2">
+                  <IoAlert className="text-xl" />
+                  Possíveis violações do CDC
+                </h3>
+                <ul className="space-y-2">
+                  {result.cdcViolations.map((violation, i) => (
+                    <li key={i} className="text-sm text-base-content/70 flex gap-3">
+                      <span className="text-error font-bold">•</span>
+                      <span>{violation}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Clauses */}
+            <div>
+              <h3 className="font-bold text-lg mb-4">
+                Cláusulas Identificadas ({result.clauses.length})
+              </h3>
+              <div className="grid gap-3">
+                {result.clauses.map((clause) => (
+                  <ClauseCard
+                    key={clause.id}
+                    clause={clause}
+                    onClick={() => router.push(`/clause/${clause.id}`)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6">
+              <h3 className="font-bold text-lg text-primary mb-4">Recomendações</h3>
+              <ul className="space-y-3">
+                {result.recommendations.map((rec, i) => (
+                  <li key={i} className="text-sm text-base-content/70 flex gap-3">
+                    <span className="text-primary font-bold text-base">{i + 1}.</span>
+                    <span>{rec}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Actions */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <button className="btn btn-outline btn-lg gap-2">
+                <IoBookmark />
+                Salvar
+              </button>
+              <button className="btn btn-outline btn-lg gap-2">
+                <IoShareSocial />
+                Compartilhar
+              </button>
+            </div>
+
+            <button
+              className="btn btn-primary btn-lg w-full gap-2"
+              onClick={() => router.push("/")}
+            >
+              <IoHome />
+              Analisar outro documento
+            </button>
+          </div>
+          </div>
+        </div>
       </div>
     </div>
-    </AppShell>
   );
 }

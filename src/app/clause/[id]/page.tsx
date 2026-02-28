@@ -3,14 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
-import Header from "@/components/Header";
-import AppShell from "@/components/AppShell";
 import {
   IoShieldCheckmark,
   IoWarning,
   IoAlert,
   IoBook,
   IoFlash,
+  IoShield,
 } from "react-icons/io5";
 import type { Clause, RiskLevel } from "@/types";
 
@@ -95,88 +94,112 @@ export default function ClauseDetailPage() {
   const RiskIcon = getRiskIcon(clause.riskLevel);
 
   return (
-    <AppShell>
-    <div className="flex flex-col min-h-screen">
-      <Header title="Detalhe da Cláusula" showBack backTo="/results" />
-
-      <div className="flex-1 px-6 py-6 flex flex-col gap-5">
-        {/* Risk badge + title */}
-        <div>
-          <div className={`badge ${getRiskBadge(clause.riskLevel)} mb-2`}>
-            {getRiskLabel(clause.riskLevel)}
-          </div>
-          <h2 className="text-xl font-bold">{clause.title}</h2>
+    <div className="min-h-screen bg-base-100">
+      {/* ───── Navbar ───── */}
+      <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <button
+            onClick={() => router.push("/")}
+            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
+          >
+            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+              <IoShield className="w-5 h-5 text-black" />
+            </div>
+            Cláusula Oculta
+          </button>
+          <button
+            onClick={() => router.push("/results")}
+            className="px-4 py-2 bg-base-200 text-base-content font-semibold text-sm rounded-lg hover:bg-base-300 transition-colors"
+          >
+            Voltar aos Resultados
+          </button>
         </div>
+      </nav>
 
-        {/* Risk indicator */}
-        <div
-          className={`flex items-center gap-3 p-4 rounded-xl border ${getRiskBgColor(
-            clause.riskLevel
-          )}`}
-        >
-          <RiskIcon className={`text-3xl ${getRiskColor(clause.riskLevel)}`} />
-          <div>
-            <p className={`font-bold text-sm ${getRiskColor(clause.riskLevel)}`}>
+      {/* ───── Main Content ───── */}
+      <div className="pt-16">
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <div className="mt-8 max-w-3xl mx-auto">
+          {/* Risk badge + title */}
+          <div className="mb-8">
+            <div className={`badge ${getRiskBadge(clause.riskLevel)} badge-lg mb-4`}>
               {getRiskLabel(clause.riskLevel)}
-            </p>
-            <p className="text-xs text-base-content/60">{clause.impact}</p>
+            </div>
+            <h2 className="text-2xl md:text-3xl font-extrabold">{clause.title}</h2>
+          </div>
+
+          <div className="grid gap-6">
+            {/* Risk indicator */}
+            <div
+              className={`flex items-center gap-4 p-6 rounded-2xl border ${getRiskBgColor(
+                clause.riskLevel
+              )}`}
+            >
+              <RiskIcon className={`text-4xl ${getRiskColor(clause.riskLevel)}`} />
+              <div>
+                <p className={`font-bold text-lg ${getRiskColor(clause.riskLevel)}`}>
+                  {getRiskLabel(clause.riskLevel)}
+                </p>
+                <p className="text-sm text-base-content/60">{clause.impact}</p>
+              </div>
+            </div>
+
+            {/* Original text */}
+            <div>
+              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                <IoBook className="text-base-content/50" />
+                Texto Original
+              </h3>
+              <div className="bg-base-200 rounded-2xl p-6">
+                <p className="text-sm text-base-content/70 leading-relaxed italic">
+                  “{clause.originalText}”
+                </p>
+              </div>
+            </div>
+
+            {/* Simplified text */}
+            <div>
+              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                <IoFlash className="text-primary" />
+                Em linguagem simples
+              </h3>
+              <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6">
+                <p className="text-base text-base-content leading-relaxed">
+                  {clause.simplifiedText}
+                </p>
+              </div>
+            </div>
+
+            {/* Explanation */}
+            <div>
+              <h3 className="font-bold text-lg mb-4">Por que isso importa?</h3>
+              <p className="text-base text-base-content/70 leading-relaxed">
+                {clause.explanation}
+              </p>
+            </div>
+
+            {/* CDC Reference */}
+            {clause.cdcReference && (
+              <div className="bg-warning/5 border border-warning/20 rounded-2xl p-6">
+                <h3 className="font-bold text-lg text-warning mb-3 flex items-center gap-2">
+                  <IoWarning className="text-xl" />
+                  Referência Legal
+                </h3>
+                <p className="text-base text-base-content/70">{clause.cdcReference}</p>
+              </div>
+            )}
+
+            {/* Back button */}
+            <button
+              className="btn btn-primary btn-lg w-full gap-2"
+              onClick={() => router.push("/results")}
+            >
+              Voltar para o Resultado
+            </button>
+          </div>
           </div>
         </div>
-
-        {/* Original text */}
-        <div>
-          <h3 className="font-bold text-sm mb-2 flex items-center gap-2">
-            <IoBook className="text-base-content/50" />
-            Texto Original
-          </h3>
-          <div className="bg-base-200 rounded-xl p-4">
-            <p className="text-xs text-base-content/70 leading-relaxed italic">
-              &ldquo;{clause.originalText}&rdquo;
-            </p>
-          </div>
-        </div>
-
-        {/* Simplified text */}
-        <div>
-          <h3 className="font-bold text-sm mb-2 flex items-center gap-2">
-            <IoFlash className="text-primary" />
-            Em linguagem simples
-          </h3>
-          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
-            <p className="text-sm text-base-content leading-relaxed">
-              {clause.simplifiedText}
-            </p>
-          </div>
-        </div>
-
-        {/* Explanation */}
-        <div>
-          <h3 className="font-bold text-sm mb-2">Por que isso importa?</h3>
-          <p className="text-sm text-base-content/70 leading-relaxed">
-            {clause.explanation}
-          </p>
-        </div>
-
-        {/* CDC Reference */}
-        {clause.cdcReference && (
-          <div className="bg-warning/5 border border-warning/20 rounded-xl p-4">
-            <h3 className="font-bold text-sm text-warning mb-1 flex items-center gap-2">
-              <IoWarning />
-              Referência Legal
-            </h3>
-            <p className="text-sm text-base-content/70">{clause.cdcReference}</p>
-          </div>
-        )}
-
-        {/* Back button */}
-        <button
-          className="btn btn-primary w-full mt-auto"
-          onClick={() => router.push("/results")}
-        >
-          Voltar para o Resultado
-        </button>
       </div>
     </div>
-    </AppShell>
   );
 }
