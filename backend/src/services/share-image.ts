@@ -1,5 +1,7 @@
 import satori from "satori";
 import { Resvg, initWasm } from "@resvg/resvg-wasm";
+// @ts-expect-error — wrangler bundles .wasm as CompiledWasm module
+import resvgWasm from "../../node_modules/@resvg/resvg-wasm/index_bg.wasm";
 import type { MistralClient } from "./mistral";
 import { MINISTRAL_8B } from "./mistral";
 import { loadFonts } from "./fonts";
@@ -296,12 +298,10 @@ export async function renderShareCard(opts: {
     fonts,
   });
 
-  // Initialize WASM once
+  // Initialize WASM once (bundled via wrangler CompiledWasm rule)
   if (!wasmInitialized) {
     try {
-      await initWasm(
-        fetch("https://unpkg.com/@resvg/resvg-wasm@2.6.2/index_bg.wasm")
-      );
+      await initWasm(resvgWasm);
     } catch {
       // Already initialized (e.g. in a long-running worker)
     }
