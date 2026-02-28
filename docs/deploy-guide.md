@@ -135,7 +135,7 @@ npx wrangler kv bulk put scripts/kv/_bulk.json --binding INCLUSIVAI_CACHE
 npx wrangler deploy
 ```
 
-This outputs your Worker URL, e.g.: `https://inclusivai-api.your-subdomain.workers.dev`
+This outputs your Worker URL, e.g.: `https://inclusive-api.bbu.app.br/health`
 
 ---
 
@@ -144,7 +144,7 @@ This outputs your Worker URL, e.g.: `https://inclusivai-api.your-subdomain.worke
 ### 7.1 Health Check
 
 ```bash
-curl https://YOUR_WORKER_URL/health
+curl https://inclusive-api.bbu.app.br/health
 # Expected: {"status":"ok"}
 ```
 
@@ -152,17 +152,17 @@ curl https://YOUR_WORKER_URL/health
 
 ```bash
 # Signup
-curl -X POST https://YOUR_WORKER_URL/api/auth/signup \
+curl -X POST https://inclusive-api.bbu.app.br/api/auth/signup \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"test123456"}'
 
 # Login (save the access_token)
-curl -X POST https://YOUR_WORKER_URL/api/auth/login \
+curl -X POST https://inclusive-api.bbu.app.br/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"test123456"}'
 
 # Get profile (use the token from login)
-curl https://YOUR_WORKER_URL/api/auth/me \
+curl https://inclusive-api.bbu.app.br/api/auth/me \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
@@ -170,7 +170,7 @@ curl https://YOUR_WORKER_URL/api/auth/me \
 
 ```bash
 # Create document
-curl -X POST https://YOUR_WORKER_URL/api/documents/text \
+curl -X POST https://inclusive-api.bbu.app.br/api/documents/text \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{
@@ -180,7 +180,7 @@ curl -X POST https://YOUR_WORKER_URL/api/documents/text \
   }'
 
 # Analyze (use the document ID from above)
-curl -X POST https://YOUR_WORKER_URL/api/analyze/DOCUMENT_ID \
+curl -X POST https://inclusive-api.bbu.app.br/api/analyze/DOCUMENT_ID \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{"analysis_type":"tos","simplification_level":"medio"}'
@@ -189,13 +189,13 @@ curl -X POST https://YOUR_WORKER_URL/api/analyze/DOCUMENT_ID \
 ### 7.4 Image Upload (Scam Detection)
 
 ```bash
-curl -X POST https://YOUR_WORKER_URL/api/documents/upload \
+curl -X POST https://inclusive-api.bbu.app.br/api/documents/upload \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -F "file=@screenshot.png" \
   -F "title=WhatsApp Screenshot"
 
 # Analyze as scam
-curl -X POST https://YOUR_WORKER_URL/api/analyze/DOCUMENT_ID \
+curl -X POST https://inclusive-api.bbu.app.br/api/analyze/DOCUMENT_ID \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{"analysis_type":"scam","simplification_level":"fundamental"}'
@@ -204,7 +204,7 @@ curl -X POST https://YOUR_WORKER_URL/api/analyze/DOCUMENT_ID \
 ### 7.5 Generate Audio
 
 ```bash
-curl -X POST https://YOUR_WORKER_URL/api/analyze/ANALYSIS_ID/audio \
+curl -X POST https://inclusive-api.bbu.app.br/api/analyze/ANALYSIS_ID/audio \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
@@ -212,16 +212,16 @@ curl -X POST https://YOUR_WORKER_URL/api/analyze/ANALYSIS_ID/audio \
 
 ```bash
 # List demos
-curl https://YOUR_WORKER_URL/api/demo
+curl https://inclusive-api.bbu.app.br/api/demo
 
 # Get specific demo
-curl https://YOUR_WORKER_URL/api/demo/tos/instagram-meta-platforms
+curl https://inclusive-api.bbu.app.br/api/demo/tos/instagram-meta-platforms
 ```
 
 ### 7.7 Ranking (Public)
 
 ```bash
-curl https://YOUR_WORKER_URL/api/ranking
+curl https://inclusive-api.bbu.app.br/api/ranking
 ```
 
 ---
