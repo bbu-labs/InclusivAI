@@ -180,14 +180,22 @@ analyze.post("/:analysisId/audio", async (c) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
 
-    // ElevenLabs quota/billing errors (status 401 with "quota" or 422 with quota info)
-    if (/ElevenLabs API error.*(401|422)/.test(message) && /quota|credit|billing|subscription/i.test(message)) {
-      return c.json({ error: "Serviço de áudio indisponível", detail: "Quota do serviço de voz excedida", fallback: true }, 402);
+    // ElevenLabs 401 — check if it's quota-related or a plain auth error
+    if (/ElevenLabs API error.*401/.test(message)) {
+      if (/quota|credit|billing|subscription/i.test(message)) {
+        return c.json({ error: "Serviço de áudio indisponível", detail: message, fallback: true }, 402);
+      }
+      return c.json({ error: "Falha de autenticação no serviço de áudio", detail: message, fallback: true }, 401);
+    }
+
+    // ElevenLabs 422 with quota/billing keywords
+    if (/ElevenLabs API error.*422/.test(message) && /quota|credit|billing|subscription/i.test(message)) {
+      return c.json({ error: "Serviço de áudio indisponível", detail: message, fallback: true }, 402);
     }
 
     // ElevenLabs rate limit
     if (/ElevenLabs API error.*429/.test(message)) {
-      return c.json({ error: "Limite de requisições atingido", detail: "Tente novamente em alguns instantes", fallback: true }, 429);
+      return c.json({ error: "Limite de requisições atingido", detail: message, fallback: true }, 429);
     }
 
     // Supabase upload errors

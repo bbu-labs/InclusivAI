@@ -1,6 +1,5 @@
 const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
-// Portuguese (BR) voice — "Antoni" is a good default, can be changed
-const DEFAULT_VOICE_ID = "ErXwobaYiN019PkySvjV"; // Antoni
+const DEFAULT_VOICE_ID = "UZ8QqWVrz7tMdxiglcLh";
 const MODEL_ID = "eleven_multilingual_v2";
 const MAX_CHARS = 5000;
 const TIMEOUT_MS = 60000;
