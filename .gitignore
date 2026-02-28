@@ -39,3 +39,12 @@ next-env.d.ts
 /docs/*.docx
 /docs/*.pdf
 /docs/*.xlsx
+
+# Backend
+/backend/node_modules
+/backend/.dev.vars
+/backend/.wrangler
+
+# Claude
+/.claude/*.log
+/.claude/*.json
