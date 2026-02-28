@@ -35,6 +35,9 @@ app.route("/api/analyze", analyzeRoutes);
 
 // Global error handler
 app.onError((err, c) => {
+  console.error(`[ERROR] ${c.req.method} ${c.req.path}:`, err);
+
+  // Hono HTTP exceptions
   if (err instanceof HTTPException) {
     return c.json(
       { error: err.message, detail: err.cause },
@@ -42,7 +45,32 @@ app.onError((err, c) => {
     );
   }
 
-  console.error("Unhandled error:", err);
+  const message = err instanceof Error ? err.message : String(err);
+
+  // Zod validation errors
+  if (message.includes("Validation") || message.includes("parse")) {
+    return c.json(
+      { error: "Dados inválidos", detail: message, suggestion: "Verifique os campos enviados" },
+      400
+    );
+  }
+
+  // Mistral API errors
+  if (message.includes("Mistral") || message.includes("mistral") || message.includes("429")) {
+    return c.json(
+      { error: "O serviço de IA está temporariamente indisponível", detail: "Tente novamente em alguns instantes", suggestion: "Se o problema persistir, tente com um documento menor" },
+      502
+    );
+  }
+
+  // Supabase errors
+  if (message.includes("supabase") || message.includes("PostgrestError")) {
+    return c.json(
+      { error: "Erro ao acessar o banco de dados", detail: "Tente novamente em alguns instantes" },
+      500
+    );
+  }
+
   return c.json(
     { error: "Erro interno do servidor", detail: "Tente novamente em alguns instantes" },
     500
