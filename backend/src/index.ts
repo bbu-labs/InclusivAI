@@ -4,6 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import type { AppEnv } from "./types";
 import { authMiddleware } from "./middleware/auth";
 import authRoutes from "./routes/auth";
+import documentRoutes from "./routes/documents";
 
 const app = new Hono<AppEnv>();
 
@@ -28,6 +29,7 @@ app.get("/health", (c) => {
 
 // Routes
 app.route("/api/auth", authRoutes);
+app.route("/api/documents", documentRoutes);
 
 // Global error handler
 app.onError((err, c) => {
