@@ -6,6 +6,7 @@ import { requireAuth } from "../middleware/auth";
 import { ANALYSIS_TYPES, SIMPLIFICATION_LEVELS } from "../types";
 import { createMistralClient } from "../services/mistral";
 import { analyzeDocument } from "../agents/pipeline";
+import { generateAudio } from "../agents/audio";
 
 const analyze = new Hono<AppEnv>();
 
@@ -110,6 +111,77 @@ analyze.get("/:analysisId", async (c) => {
   }
 
   return c.json({ analysis: data });
+});
+
+// POST /api/analyze/:analysisId/audio — generate audio for existing analysis
+analyze.post("/:analysisId/audio", async (c) => {
+  const user = c.get("user")!;
+  const analysisId = c.req.param("analysisId");
+  const supabaseAdmin = c.get("supabaseAdmin");
+
+  // Fetch analysis
+  const { data: analysis, error } = await supabaseAdmin
+    .from("analyses")
+    .select("*")
+    .eq("id", analysisId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (error || !analysis) {
+    return c.json({ error: "Análise não encontrada" }, 404);
+  }
+
+  // Return cached audio if it exists
+  if (analysis.audio_url) {
+    return c.json({ audio: { audioUrl: analysis.audio_url, cached: true } });
+  }
+
+  // Build audio text from summary
+  const summary = analysis.summary as Record<string, unknown>;
+  let audioText = "";
+
+  if (summary.resumo) {
+    audioText += summary.resumo + "\n\n";
+  }
+  if (summary.resumo_executivo) {
+    audioText += summary.resumo_executivo + "\n\n";
+  }
+  if (summary.explicacao) {
+    audioText += summary.explicacao + "\n\n";
+  }
+  if (summary.recomendacao) {
+    audioText += "Recomendação: " + summary.recomendacao + "\n\n";
+  }
+  if (summary.acao_recomendada) {
+    audioText += "Ação recomendada: " + summary.acao_recomendada + "\n\n";
+  }
+  if (Array.isArray(summary.pontos_criticos)) {
+    for (const ponto of summary.pontos_criticos as Array<{ item: string; explicacao: string }>) {
+      audioText += `${ponto.item}: ${ponto.explicacao}\n`;
+    }
+  }
+
+  if (!audioText.trim()) {
+    return c.json({ error: "Análise sem conteúdo para gerar áudio" }, 400);
+  }
+
+  const kvCache = "CACHE" in c.env ? (c.env as Record<string, unknown>).CACHE as KVNamespace : undefined;
+
+  const result = await generateAudio(
+    audioText.trim(),
+    analysisId,
+    supabaseAdmin,
+    kvCache,
+    c.env.ELEVENLABS_API_KEY
+  );
+
+  // Update analysis with audio URL
+  await supabaseAdmin
+    .from("analyses")
+    .update({ audio_url: result.audioUrl })
+    .eq("id", analysisId);
+
+  return c.json({ audio: result }, 201);
 });
 
 export default analyze;
