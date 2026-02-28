@@ -190,14 +190,13 @@ share.get("/:analysisId/image", async (c) => {
     socialSummary = rawSummary.length > 120 ? rawSummary.slice(0, 117) + "..." : rawSummary;
   }
 
-  // Render SVG via satori
-  const svg = await renderShareCardSvg({
+  // Render SVG (pure string template, no WASM)
+  const svg = renderShareCardSvg({
     documentTitle,
     analysisType: analysis.analysis_type as string,
     protectionScore,
     socialSummary,
     date: analysis.created_at as string,
-    kv: c.env.INCLUSIVAI_CACHE,
   });
 
   // Cache SVG in KV (7-day TTL)

@@ -1,7 +1,5 @@
-import satori from "satori";
 import type { MistralClient } from "./mistral";
 import { MINISTRAL_8B } from "./mistral";
-import { loadFonts } from "./fonts";
 
 const ANALYSIS_TYPE_LABELS: Record<string, string> = {
   tos: "Termos de Uso",
@@ -46,7 +44,7 @@ Resumo da análise: ${rawSummary.slice(0, 500)}`,
   return data.frase_compartilhamento;
 }
 
-// ─── Render SVG card (satori works natively in CF Workers) ───
+// ─── Render SVG card as string (no WASM, CF Workers compatible) ───
 
 function getScoreColor(score: number): string {
   if (score >= 70) return "#22c55e";
@@ -55,240 +53,98 @@ function getScoreColor(score: number): string {
 }
 
 function getScoreLabel(score: number): string {
-  if (score >= 70) return "Boa Protecao";
-  if (score >= 40) return "Atencao Necessaria";
+  if (score >= 70) return "Boa Proteção";
+  if (score >= 40) return "Atenção Necessária";
   return "Alto Risco";
 }
 
-export async function renderShareCardSvg(opts: {
+function escapeXml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** Wrap text into lines that fit within a given character limit */
+function wrapText(text: string, maxChars: number): string[] {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    if (current.length + word.length + 1 > maxChars && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = current ? current + " " + word : word;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+export function renderShareCardSvg(opts: {
   documentTitle: string;
   analysisType: string;
   protectionScore: number;
   socialSummary: string;
   date: string;
-  kv: KVNamespace;
-}): Promise<string> {
-  const { documentTitle, analysisType, protectionScore, socialSummary, date, kv } = opts;
+}): string {
+  const { documentTitle, analysisType, protectionScore, socialSummary, date } = opts;
 
   const scoreColor = getScoreColor(protectionScore);
   const scoreLabel = getScoreLabel(protectionScore);
   const typeLabel = ANALYSIS_TYPE_LABELS[analysisType] || analysisType;
   const formattedDate = new Date(date).toLocaleDateString("pt-BR");
   const truncatedTitle =
-    documentTitle.length > 60 ? documentTitle.slice(0, 57) + "..." : documentTitle;
+    documentTitle.length > 55 ? documentTitle.slice(0, 52) + "..." : documentTitle;
 
-  const fonts = await loadFonts(kv);
+  // Wrap social summary into lines (~65 chars per line at 22px font)
+  const summaryLines = wrapText(
+    socialSummary.length > 200 ? socialSummary.slice(0, 197) + "..." : socialSummary,
+    65
+  ).slice(0, 3);
 
-  const card = {
-    type: "div",
-    props: {
-      style: {
-        width: "1200px",
-        height: "630px",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        padding: "60px",
-        background: "linear-gradient(135deg, #156579 0%, #0f3d4d 60%, #0a2a35 100%)",
-        fontFamily: "Inter",
-        color: "white",
-      },
-      children: [
-        // Top section
-        {
-          type: "div",
-          props: {
-            style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start" },
-            children: [
-              // Left: title + badge
-              {
-                type: "div",
-                props: {
-                  style: { display: "flex", flexDirection: "column", flex: 1, marginRight: "40px" },
-                  children: [
-                    {
-                      type: "div",
-                      props: {
-                        style: {
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "12px",
-                          marginBottom: "20px",
-                        },
-                        children: [
-                          {
-                            type: "div",
-                            props: {
-                              style: {
-                                background: "rgba(255,255,255,0.15)",
-                                borderRadius: "8px",
-                                padding: "6px 16px",
-                                fontSize: "16px",
-                                fontWeight: 700,
-                              },
-                              children: typeLabel,
-                            },
-                          },
-                        ],
-                      },
-                    },
-                    {
-                      type: "div",
-                      props: {
-                        style: {
-                          fontSize: "36px",
-                          fontWeight: 700,
-                          lineHeight: 1.2,
-                          marginBottom: "16px",
-                        },
-                        children: truncatedTitle,
-                      },
-                    },
-                  ],
-                },
-              },
-              // Right: score circle
-              {
-                type: "div",
-                props: {
-                  style: {
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    flexShrink: 0,
-                  },
-                  children: [
-                    {
-                      type: "div",
-                      props: {
-                        style: {
-                          width: "140px",
-                          height: "140px",
-                          borderRadius: "70px",
-                          border: `6px solid ${scoreColor}`,
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        },
-                        children: [
-                          {
-                            type: "div",
-                            props: {
-                              style: {
-                                fontSize: "48px",
-                                fontWeight: 700,
-                                color: scoreColor,
-                                lineHeight: 1,
-                              },
-                              children: String(protectionScore),
-                            },
-                          },
-                          {
-                            type: "div",
-                            props: {
-                              style: {
-                                fontSize: "14px",
-                                color: "rgba(255,255,255,0.6)",
-                              },
-                              children: "/100",
-                            },
-                          },
-                        ],
-                      },
-                    },
-                    {
-                      type: "div",
-                      props: {
-                        style: {
-                          fontSize: "14px",
-                          fontWeight: 700,
-                          color: scoreColor,
-                          marginTop: "8px",
-                        },
-                        children: scoreLabel,
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
-        // Social summary
-        {
-          type: "div",
-          props: {
-            style: {
-              fontSize: "22px",
-              lineHeight: 1.5,
-              color: "rgba(255,255,255,0.85)",
-              maxHeight: "100px",
-              overflow: "hidden",
-            },
-            children: socialSummary,
-          },
-        },
-        // Bottom: CTA + date + brand
-        {
-          type: "div",
-          props: {
-            style: {
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-end",
-            },
-            children: [
-              {
-                type: "div",
-                props: {
-                  style: { display: "flex", flexDirection: "column", gap: "4px" },
-                  children: [
-                    {
-                      type: "div",
-                      props: {
-                        style: {
-                          fontSize: "18px",
-                          fontWeight: 700,
-                          color: "#5cbfcf",
-                        },
-                        children: "Clausula Oculta",
-                      },
-                    },
-                    {
-                      type: "div",
-                      props: {
-                        style: {
-                          fontSize: "14px",
-                          color: "rgba(255,255,255,0.5)",
-                        },
-                        children: "Analise seu documento em clausulaoculta.com.br",
-                      },
-                    },
-                  ],
-                },
-              },
-              {
-                type: "div",
-                props: {
-                  style: {
-                    fontSize: "14px",
-                    color: "rgba(255,255,255,0.4)",
-                  },
-                  children: formattedDate,
-                },
-              },
-            ],
-          },
-        },
-      ],
-    },
-  };
+  // Wrap title into lines (~30 chars per line at 36px font)
+  const titleLines = wrapText(truncatedTitle, 30).slice(0, 2);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return satori(card as any, {
-    width: 1200,
-    height: 630,
-    fonts,
-  });
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#156579"/>
+      <stop offset="60%" stop-color="#0f3d4d"/>
+      <stop offset="100%" stop-color="#0a2a35"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Analysis type badge -->
+  <rect x="60" y="55" width="${typeLabel.length * 10 + 32}" height="34" rx="8" fill="rgba(255,255,255,0.15)"/>
+  <text x="76" y="78" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="700" fill="white">${escapeXml(typeLabel)}</text>
+
+  <!-- Document title -->
+  ${titleLines.map((line, i) =>
+    `<text x="60" y="${130 + i * 44}" font-family="system-ui, -apple-system, sans-serif" font-size="36" font-weight="700" fill="white">${escapeXml(line)}</text>`
+  ).join("\n  ")}
+
+  <!-- Score circle -->
+  <circle cx="1060" cy="130" r="70" fill="none" stroke="${scoreColor}" stroke-width="6"/>
+  <text x="1060" y="140" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="700" fill="${scoreColor}" text-anchor="middle">${protectionScore}</text>
+  <text x="1060" y="162" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="rgba(255,255,255,0.6)" text-anchor="middle">/100</text>
+  <text x="1060" y="225" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="${scoreColor}" text-anchor="middle">${escapeXml(scoreLabel)}</text>
+
+  <!-- Social summary -->
+  ${summaryLines.map((line, i) =>
+    `<text x="60" y="${370 + i * 32}" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="rgba(255,255,255,0.85)">${escapeXml(line)}</text>`
+  ).join("\n  ")}
+
+  <!-- Brand -->
+  <text x="60" y="545" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#5cbfcf">Cláusula Oculta</text>
+  <text x="60" y="570" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="rgba(255,255,255,0.5)">Analise seu documento em clausulaoculta.com.br</text>
+
+  <!-- Date -->
+  <text x="1140" y="570" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="rgba(255,255,255,0.4)" text-anchor="end">${escapeXml(formattedDate)}</text>
+</svg>`;
 }
