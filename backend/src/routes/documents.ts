@@ -3,6 +3,8 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import type { AppEnv } from "../types";
 import { requireAuth } from "../middleware/auth";
+import { createMistralClient, MISTRAL_LARGE } from "../services/mistral";
+import { DOC_GEN_TYPES, DOC_GEN_SYSTEM_PROMPT, DOC_GEN_USER_PROMPT, type DocGenType } from "../prompts/document-gen";
 
 const documents = new Hono<AppEnv>();
 
@@ -169,5 +171,76 @@ documents.delete("/:id", async (c) => {
 
   return c.json({ message: "Documento excluído com sucesso" });
 });
+
+const docGenSchema = z.object({
+  type: z.enum(DOC_GEN_TYPES),
+  nome: z.string().optional(),
+  cpf: z.string().optional(),
+  empresa: z.string().min(1, "Nome da empresa é obrigatório"),
+  problema: z.string().min(10, "Descreva o problema com mais detalhes"),
+  data_ocorrencia: z.string().optional(),
+  valor: z.string().optional(),
+  tentativas_anteriores: z.string().optional(),
+  pedido: z.string().optional(),
+});
+
+// POST /api/documents/:documentId/generate — generate legal document
+documents.post(
+  "/:documentId/generate",
+  zValidator("json", docGenSchema),
+  async (c) => {
+    const user = c.get("user")!;
+    const documentId = c.req.param("documentId");
+    const body = c.req.valid("json");
+    const supabaseAdmin = c.get("supabaseAdmin");
+
+    // Fetch analysis for this document (if any) to provide context
+    let analysisContext: string | undefined;
+    const { data: analysis } = await supabaseAdmin
+      .from("analyses")
+      .select("summary")
+      .eq("document_id", documentId)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (analysis?.summary) {
+      analysisContext = JSON.stringify(analysis.summary);
+    }
+
+    const mistralClient = createMistralClient(c.env.MISTRAL_API_KEY);
+
+    const userPrompt = DOC_GEN_USER_PROMPT(
+      body.type as DocGenType,
+      {
+        nome: body.nome,
+        cpf: body.cpf,
+        empresa: body.empresa,
+        problema: body.problema,
+        data_ocorrencia: body.data_ocorrencia,
+        valor: body.valor,
+        tentativas_anteriores: body.tentativas_anteriores,
+        pedido: body.pedido,
+      },
+      analysisContext
+    );
+
+    const result = await mistralClient.chatJSON<{
+      documento: string;
+      tipo: string;
+      instrucoes: string;
+    }>(
+      MISTRAL_LARGE,
+      [
+        { role: "system", content: DOC_GEN_SYSTEM_PROMPT },
+        { role: "user", content: userPrompt },
+      ],
+      4096
+    );
+
+    return c.json({ generated: result.data }, 201);
+  }
+);
 
 export default documents;
