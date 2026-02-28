@@ -1,0 +1,9 @@
+name = "clausula-oculta-api"
+main = "src/index.ts"
+compatibility_date = "2025-02-10"
+compatibility_flags = ["nodejs_compat"]
+
+# KV Namespace - replace with actual ID after `wrangler kv namespace create CACHE`
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "YOUR_KV_NAMESPACE_ID"
