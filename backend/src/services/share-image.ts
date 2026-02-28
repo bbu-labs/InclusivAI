@@ -289,7 +289,8 @@ export async function renderShareCard(opts: {
     },
   };
 
-  const svg = await satori(card as React.ReactNode, {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const svg = await satori(card as any, {
     width: 1200,
     height: 630,
     fonts,
