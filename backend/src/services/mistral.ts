@@ -96,6 +96,12 @@ export function createMistralClient(apiKey: string): MistralClient {
       userPrompt: string,
       maxTokens = 4096
     ) {
+      const dataUri = `data:${mimeType};base64,${imageBase64}`;
+      const contentItem =
+        mimeType === "application/pdf"
+          ? { type: "document_url" as const, documentUrl: dataUri }
+          : { type: "image_url" as const, imageUrl: dataUri };
+
       const result = await withRetry(() =>
         client.chat.complete({
           model,
@@ -103,13 +109,7 @@ export function createMistralClient(apiKey: string): MistralClient {
             { role: "system", content: systemPrompt },
             {
               role: "user",
-              content: [
-                {
-                  type: "image_url",
-                  imageUrl: `data:${mimeType};base64,${imageBase64}`,
-                },
-                { type: "text", text: userPrompt },
-              ],
+              content: [contentItem, { type: "text" as const, text: userPrompt }],
             },
           ],
           maxTokens,
