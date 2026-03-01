@@ -185,10 +185,6 @@ export default function ResultsPage() {
 
   if (!display) return null;
 
-  const handleClauseClick = (index: number) => {
-    router.push(`/clause/${index}`);
-  };
-
   return (
     <div className="min-h-screen bg-base-100">
       <Navbar
@@ -221,7 +217,6 @@ export default function ResultsPage() {
               <TosResult
                 summary={display.summary as TosAnalysisSummary}
                 protectionScore={display.protectionScore}
-                onClauseClick={handleClauseClick}
               />
             )}
             {display.analysisType === "scam" && (

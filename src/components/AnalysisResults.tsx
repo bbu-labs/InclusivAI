@@ -4,7 +4,6 @@ import {
   IoShieldCheckmark,
   IoWarning,
   IoAlert,
-  IoChevronForward,
 } from "react-icons/io5";
 import type {
   TosAnalysisSummary,
@@ -68,11 +67,9 @@ export function ScoreGauge({ score }: { score: number }) {
 export function TosResult({
   summary,
   protectionScore,
-  onClauseClick,
 }: {
   summary: TosAnalysisSummary;
   protectionScore: number;
-  onClauseClick?: (index: number) => void;
 }) {
   return (
     <div className="grid gap-6">
@@ -95,36 +92,30 @@ export function TosResult({
           </h3>
           <div className="grid gap-3">
             {summary.clausulas_abusivas.map((clause, index) => (
-              <button
+              <div
                 key={index}
-                className="card bg-base-200 w-full text-left cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => onClauseClick?.(index)}
+                className="card bg-base-200 w-full"
               >
                 <div className="card-body p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span
-                          className={`badge badge-sm ${getGravidadeBadge(
-                            clause.gravidade
-                          )}`}
-                        >
-                          {getGravidadeLabel(clause.gravidade)}
-                        </span>
-                        {clause.artigo_cdc && (
-                          <span className="text-xs text-base-content/50">
-                            {clause.artigo_cdc}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-base-content/80 mt-1 line-clamp-2">
-                        {clause.explicacao_simples}
-                      </p>
-                    </div>
-                    <IoChevronForward className="text-lg text-base-content/30 flex-shrink-0 mt-1" />
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span
+                      className={`badge badge-sm ${getGravidadeBadge(
+                        clause.gravidade
+                      )}`}
+                    >
+                      {getGravidadeLabel(clause.gravidade)}
+                    </span>
+                    {clause.artigo_cdc && (
+                      <span className="text-xs text-base-content/50">
+                        {clause.artigo_cdc}
+                      </span>
+                    )}
                   </div>
+                  <p className="text-sm text-base-content/80 mt-1">
+                    {clause.explicacao_simples}
+                  </p>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         </div>
