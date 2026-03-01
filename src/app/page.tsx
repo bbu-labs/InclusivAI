@@ -20,6 +20,8 @@ import {
   IoPencil,
   IoBuild,
   IoPeople,
+  IoMic,
+  IoText,
 } from "react-icons/io5";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
@@ -661,13 +663,13 @@ export default function Home() {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {/* URL */}
             <motion.button
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0 * 0.15 }}
+              transition={{ delay: 0 * 0.1 }}
               className="card bg-base-100 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-base-200 text-left"
               onClick={handleSelect}
             >
@@ -692,7 +694,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 1 * 0.15 }}
+              transition={{ delay: 1 * 0.1 }}
               className="card bg-base-100 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-base-200 text-left"
               onClick={handleSelect}
             >
@@ -717,7 +719,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 2 * 0.15 }}
+              transition={{ delay: 2 * 0.1 }}
               className="card bg-base-100 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-base-200 text-left"
               onClick={handleSelect}
             >
@@ -731,6 +733,56 @@ export default function Home() {
                 </p>
                 <div className="card-actions mt-4">
                   <span className="btn btn-accent btn-sm gap-1">
+                    {t("landing.ctaStart")} <IoArrowForward />
+                  </span>
+                </div>
+              </div>
+            </motion.button>
+
+            {/* Audio */}
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 3 * 0.1 }}
+              className="card bg-base-100 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-base-200 text-left"
+              onClick={handleSelect}
+            >
+              <div className="card-body items-center text-center">
+                <div className="w-16 h-16 rounded-2xl bg-warning/10 flex items-center justify-center mb-2">
+                  <IoMic className="text-3xl text-warning" />
+                </div>
+                <h3 className="card-title text-lg">{t("landing.ctaAudio")}</h3>
+                <p className="text-sm text-base-content/60">
+                  {t("landing.ctaAudioDesc")}
+                </p>
+                <div className="card-actions mt-4">
+                  <span className="btn btn-warning btn-sm gap-1">
+                    {t("landing.ctaStart")} <IoArrowForward />
+                  </span>
+                </div>
+              </div>
+            </motion.button>
+
+            {/* Text */}
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 4 * 0.1 }}
+              className="card bg-base-100 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-base-200 text-left"
+              onClick={handleSelect}
+            >
+              <div className="card-body items-center text-center">
+                <div className="w-16 h-16 rounded-2xl bg-success/10 flex items-center justify-center mb-2">
+                  <IoText className="text-3xl text-success" />
+                </div>
+                <h3 className="card-title text-lg">{t("landing.ctaText")}</h3>
+                <p className="text-sm text-base-content/60">
+                  {t("landing.ctaTextDesc")}
+                </p>
+                <div className="card-actions mt-4">
+                  <span className="btn btn-success btn-sm gap-1">
                     {t("landing.ctaStart")} <IoArrowForward />
                   </span>
                 </div>

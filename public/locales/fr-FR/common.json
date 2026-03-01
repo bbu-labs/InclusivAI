@@ -198,9 +198,12 @@
     "unsupportedFormat": "Format non pris en charge. Utilisez PDF, DOC, DOCX ou image.",
     "fileTooLarge": "Fichier trop volumineux. La limite est de 5 Mo.",
     "audioInstruction": "Lisez le document à voix haute ou décrivez son contenu.",
+    "audioStart": "Démarrer l'enregistrement",
+    "audioStop": "Arrêter l'enregistrement",
     "startRecording": "Démarrer l'enregistrement",
     "stopRecording": "Arrêter l'enregistrement",
     "micError": "Impossible d'accéder au microphone. Vérifiez les autorisations du navigateur.",
+    "audioMicError": "Impossible d'accéder au microphone. Vérifiez les autorisations du navigateur.",
     "recordingDone": "Enregistrement terminé",
     "duration": "Durée :",
     "reRecord": "Enregistrer à nouveau",
@@ -376,6 +379,10 @@
     "ctaCameraDesc": "Prenez une photo du document ou choisissez une image de votre galerie.",
     "ctaFile": "Télécharger un fichier",
     "ctaFileDesc": "Téléchargez un PDF, DOC, DOCX ou une image de document (jusqu'à 10 Mo).",
+    "ctaAudio": "Enregistrer un audio",
+    "ctaAudioDesc": "Lisez ou décrivez le document à voix haute.",
+    "ctaText": "Coller du texte",
+    "ctaTextDesc": "Collez directement le contenu du document.",
     "ctaDisclaimer": "Vos documents sont traités en toute sécurité et ne sont pas stockés sur nos serveurs."
   },
   "analyses": {

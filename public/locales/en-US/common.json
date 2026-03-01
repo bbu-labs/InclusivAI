@@ -198,9 +198,12 @@
     "unsupportedFormat": "Unsupported format. Use PDF, DOC, DOCX, or image.",
     "fileTooLarge": "File too large. The limit is 5MB.",
     "audioInstruction": "Read the document aloud or describe its content.",
+    "audioStart": "Start Recording",
+    "audioStop": "Stop Recording",
     "startRecording": "Start Recording",
     "stopRecording": "Stop Recording",
     "micError": "Could not access microphone. Check browser permissions.",
+    "audioMicError": "Could not access microphone. Check browser permissions.",
     "recordingDone": "Recording complete",
     "duration": "Duration:",
     "reRecord": "Record again",
@@ -376,6 +379,10 @@
     "ctaCameraDesc": "Take a photo of the document or choose an image from your gallery.",
     "ctaFile": "Upload File",
     "ctaFileDesc": "Upload a PDF, DOC, DOCX, or document image (up to 10MB).",
+    "ctaAudio": "Record Audio",
+    "ctaAudioDesc": "Read or describe the document out loud.",
+    "ctaText": "Paste Text",
+    "ctaTextDesc": "Paste the document content directly.",
     "ctaDisclaimer": "Your documents are processed securely and are not stored on our servers."
   },
   "analyses": {

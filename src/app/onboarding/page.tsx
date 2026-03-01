@@ -131,7 +131,7 @@ export default function OnboardingPage() {
   return (
     <>
       <Navbar variant="solid" showNav={false} hideUserMenu />
-      <div className="min-h-screen bg-base-100 flex flex-col">
+      <div className="min-h-screen bg-base-100 flex flex-col pt-16">
         <div className="w-full max-w-2xl mx-auto px-6 py-6 flex-1 flex flex-col">
           <StepIndicator steps={STEPS} currentStep={step} />
 
