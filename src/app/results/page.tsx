@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
+import { useExperience } from "@/contexts/ExperienceContext";
 import { apiRunAnalysis, apiGetAnalysis, apiGetShareHash, ApiError } from "@/lib/api";
 import { fetchAndShareImage } from "@/lib/share-image";
 import StepIndicator from "@/components/StepIndicator";
@@ -34,6 +35,7 @@ const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
 export default function ResultsPage() {
   const router = useRouter();
   const { state, setAnalysisDisplay } = useApp();
+  const { profile: xp } = useExperience();
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [display, setDisplay] = useState<AnalysisDisplay | null>(null);
@@ -191,6 +193,15 @@ export default function ResultsPage() {
               </h2>
               <p className="text-base-content/50">Análise concluída</p>
             </div>
+
+            {xp.showGuidanceText && (
+              <div className="alert alert-info mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Dica: Role para ver todos os detalhes. Use o botão de áudio para ouvir.</span>
+              </div>
+            )}
 
             {/* Render based on analysis type */}
             {display.analysisType === "tos" && (

@@ -39,7 +39,7 @@ export default function LoginPage() {
       const { profile } = await apiGetMe();
       setProfile(profile);
 
-      router.push("/analyze");
+      router.push(profile.has_onboarded ? "/analyze" : "/onboarding");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Erro ao fazer login"

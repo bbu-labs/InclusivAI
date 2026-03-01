@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { apiGenerateAudio, ApiError } from "@/lib/api";
+import { useExperience } from "@/contexts/ExperienceContext";
 import { IoVolumeHigh, IoPlay, IoPause } from "react-icons/io5";
 
 const SPEEDS = [0.75, 1, 1.25, 1.5];
@@ -13,6 +14,7 @@ interface AudioPlayerProps {
 }
 
 export default function AudioPlayer({ analysisId, initialUrl, fallbackText }: AudioPlayerProps) {
+  const { profile: xp } = useExperience();
   const [audioUrl, setAudioUrl] = useState<string | null>(initialUrl || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +35,15 @@ export default function AudioPlayer({ analysisId, initialUrl, fallbackText }: Au
       window.speechSynthesis?.cancel();
     };
   }, []);
+
+  // Auto-generate audio for users who prefer audio
+  const autoGenTriggered = useRef(false);
+  useEffect(() => {
+    if (xp.preferAudio && !audioUrl && !loading && !autoGenTriggered.current) {
+      autoGenTriggered.current = true;
+      handleGenerate();
+    }
+  }, [xp.preferAudio, audioUrl, loading]);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -178,19 +189,20 @@ export default function AudioPlayer({ analysisId, initialUrl, fallbackText }: Au
   }
 
   // ─── No audio yet: show generate button (+ fallback on error) ───
+  const seniorSize = xp.preferAudio;
   if (!audioUrl) {
     return (
       <div>
         <button
-          className="btn btn-outline btn-sm gap-2"
+          className={`btn btn-outline gap-2 ${seniorSize ? "btn-lg" : "btn-sm"}`}
           onClick={handleGenerate}
           disabled={loading}
           aria-label="Gerar áudio da análise"
         >
           {loading ? (
-            <span className="loading loading-spinner loading-xs" />
+            <span className={`loading loading-spinner ${seniorSize ? "loading-md" : "loading-xs"}`} />
           ) : (
-            <IoVolumeHigh />
+            <IoVolumeHigh className={seniorSize ? "text-xl" : ""} />
           )}
           Gerar Áudio
         </button>
