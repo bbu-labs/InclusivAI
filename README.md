@@ -1,4 +1,4 @@
-# Hidden Clause - InclusivAI
+# Clausula Oculta - InclusivAI
 
 **AI system for Brazilian consumer protection** that transforms official, legal, and contractual documents into accessible language for people with different levels of digital literacy.
 
@@ -8,7 +8,7 @@
 
 ## About the Project
 
-**Hidden Clause** analyzes complex documents — Terms of Service, contracts, INSS letters, court notices, and suspicious messages — and translates them into simple, accessible, and understandable language. The system uses AI agents (Mistral) to extract text, classify document types, identify abusive clauses, detect scams, and generate legal consumer defense documents.
+**Clausula Oculta** analyzes complex documents — Terms of Service, contracts, INSS letters, court notices, and suspicious messages — and translates them into simple, accessible, and understandable language. The system uses AI agents (Mistral) to extract text, classify document types, identify abusive clauses, detect scams, and generate legal consumer defense documents.
 
 ### Key Features
 
