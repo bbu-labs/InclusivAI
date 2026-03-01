@@ -119,16 +119,18 @@ documents.post("/upload", async (c) => {
   }
 
   const sourceType = isPdf ? "pdf_upload" : "image_upload";
-  const filePath = `uploads/${user.id}/${Date.now()}_${file.name}`;
+  const safeName = file.name.normalize("NFD").replace(/[^\w.-]/g, "_");
+  const filePath = `${user.id}/${Date.now()}_${safeName}`;
 
   // Upload to Supabase Storage
   const fileBuffer = await file.arrayBuffer();
   const { error: uploadError } = await supabaseAdmin.storage
     .from("uploads")
-    .upload(filePath, fileBuffer, { contentType });
+    .upload(filePath, fileBuffer, { contentType, upsert: true });
 
   if (uploadError) {
-    return c.json({ error: "Erro ao fazer upload do arquivo" }, 500);
+    console.error("[UPLOAD ERROR]", uploadError.message, uploadError);
+    return c.json({ error: "Erro ao fazer upload do arquivo", detail: uploadError.message }, 500);
   }
 
   // Save document record
@@ -147,7 +149,8 @@ documents.post("/upload", async (c) => {
     .single();
 
   if (error) {
-    return c.json({ error: "Erro ao salvar documento" }, 500);
+    console.error("[DB INSERT ERROR]", error.message, error);
+    return c.json({ error: "Erro ao salvar documento", detail: error.message }, 500);
   }
 
   return c.json({ document: data }, 201);

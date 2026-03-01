@@ -76,8 +76,8 @@ export default function AnalyzePage() {
       setUploadError("Formato não suportado. Use PDF, DOC, DOCX ou imagem.");
       return false;
     }
-    if (f.size > 10 * 1024 * 1024) {
-      setUploadError("Arquivo muito grande. O limite é 10MB.");
+    if (f.size > 5 * 1024 * 1024) {
+      setUploadError("Arquivo muito grande. O limite é 5MB.");
       return false;
     }
     return true;
