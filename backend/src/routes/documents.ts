@@ -9,6 +9,7 @@ import { DOC_GEN_TYPES, DOC_GEN_SYSTEM_PROMPT, DOC_GEN_USER_PROMPT, type DocGenT
 import { DOC_CLASSIFY_PROMPT } from "../prompts/reader";
 import { isUrl, fetchUrlContent } from "../services/url-fetcher";
 import { extractTextFromPdf } from "../services/pdf";
+import { transcribeAudio } from "../services/elevenlabs";
 
 const documents = new Hono<AppEnv>();
 
@@ -188,6 +189,80 @@ documents.post("/upload", async (c) => {
         if (classified.title) data.title = classified.title;
       }
     }
+  }
+
+  return c.json({ document: data }, 201);
+});
+
+// POST /api/documents/audio — audio upload (transcribed via ElevenLabs STT)
+documents.post("/audio", async (c) => {
+  const user = c.get("user")!;
+  const supabaseAdmin = c.get("supabaseAdmin");
+
+  const body = await c.req.parseBody();
+  const file = body["file"];
+
+  if (!file || !(file instanceof File)) {
+    return c.json({ error: "Arquivo de áudio é obrigatório" }, 400);
+  }
+
+  // Validate file size (10MB limit for audio)
+  const MAX_AUDIO_SIZE = 10 * 1024 * 1024;
+  if (file.size > MAX_AUDIO_SIZE) {
+    return c.json(
+      { error: "Arquivo muito grande", detail: "Tamanho máximo para áudio: 10MB" },
+      400
+    );
+  }
+
+  if (!file.type.startsWith("audio/")) {
+    return c.json(
+      { error: "Tipo de arquivo não suportado", detail: "Envie um arquivo de áudio" },
+      400
+    );
+  }
+
+  // Transcribe audio via ElevenLabs STT
+  const audioBuffer = await file.arrayBuffer();
+  let transcription: string;
+  try {
+    transcription = await transcribeAudio(audioBuffer, file.name, c.env.ELEVENLABS_API_KEY);
+  } catch (err) {
+    console.error("[STT ERROR]", err);
+    return c.json({ error: "Erro ao transcrever áudio", detail: String(err) }, 500);
+  }
+
+  if (transcription.length < 50) {
+    return c.json(
+      { error: "Transcrição muito curta", detail: "A gravação precisa conter mais conteúdo para análise" },
+      400
+    );
+  }
+
+  // Save document with transcribed text
+  const title = transcription.slice(0, 100);
+  const { data, error } = await supabaseAdmin
+    .from("documents")
+    .insert({
+      user_id: user.id,
+      title,
+      raw_text: transcription,
+      source_type: "audio_input",
+    })
+    .select("id, title, doc_type, source_type, created_at")
+    .single();
+
+  if (error) {
+    console.error("[DB INSERT ERROR]", error.message, error);
+    return c.json({ error: "Erro ao salvar documento", detail: error.message }, 500);
+  }
+
+  // Classify doc_type
+  const mistralClient = createMistralClient(c.env.MISTRAL_API_KEY);
+  const classified = await classifyAndUpdate(supabaseAdmin, mistralClient, data.id, transcription);
+  if (classified) {
+    data.doc_type = classified.doc_type;
+    if (classified.title) data.title = classified.title;
   }
 
   return c.json({ document: data }, 201);

@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { apiUploadFile, apiCreateTextDocument, ApiError } from "@/lib/api";
+import { apiUploadFile, apiUploadAudio, apiCreateTextDocument, ApiError } from "@/lib/api";
 import StepIndicator from "@/components/StepIndicator";
 import {
   IoDocumentText,
@@ -77,6 +77,13 @@ export default function ProcessingPage() {
             state.fileName || "documento"
           );
           result = await apiUploadFile(file);
+        } else if (state.inputMethod === "audio") {
+          // Convert base64 data URL to File and upload for transcription
+          const file = dataUrlToFile(
+            state.rawInput!,
+            state.fileName || "gravacao_audio.webm"
+          );
+          result = await apiUploadAudio(file);
         } else {
           // URL or text input
           result = await apiCreateTextDocument(

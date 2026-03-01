@@ -60,6 +60,7 @@ export const SOURCE_TYPES = [
   "pdf_upload",
   "image_upload",
   "url_import",
+  "audio_input",
 ] as const;
 export type SourceType = (typeof SOURCE_TYPES)[number];
 

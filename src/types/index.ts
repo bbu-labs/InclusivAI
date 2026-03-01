@@ -1,5 +1,5 @@
 // ─── Input method (frontend only) ───
-export type InputMethod = "url" | "camera" | "file";
+export type InputMethod = "url" | "camera" | "file" | "text" | "audio";
 
 // ─── Backend enums ───
 export type DocType =
@@ -10,7 +10,7 @@ export type DocType =
   | "mensagem_suspeita"
   | "outro";
 
-export type SourceType = "text_input" | "pdf_upload" | "image_upload" | "url_import";
+export type SourceType = "text_input" | "pdf_upload" | "image_upload" | "url_import" | "audio_input";
 export type AnalysisType = "tos" | "scam" | "general" | "auto";
 export type SimplificationLevel = "fundamental" | "medio" | "tecnico";
 export type PreferredOutput = "text" | "audio" | "both";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,18 +10,22 @@ import {
   IoLink,
   IoCamera,
   IoDocument,
+  IoDocumentText,
   IoArrowForward,
   IoClose,
   IoImage,
   IoCloudUpload,
   IoCheckmarkCircle,
   IoAlert,
+  IoMic,
+  IoStop,
+  IoTrash,
 } from "react-icons/io5";
 import Navbar from "@/components/Navbar";
 
 const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
 
-type AnalysisMode = "url" | "camera" | "upload";
+type AnalysisMode = "url" | "camera" | "upload" | "text" | "audio";
 type CameraMode = "choose" | "preview";
 
 const ACCEPTED_TYPES = [
@@ -35,10 +39,20 @@ const ACCEPTED_TYPES = [
 
 const ACCEPTED_EXTENSIONS = ".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp";
 
+const TEXT_MIN_LENGTH = 200;
+const TEXT_MAX_LENGTH = 100000;
+const MAX_RECORDING_SECONDS = 300;
+
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return bytes + " B";
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
   return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
 export default function AnalyzePage() {
@@ -64,6 +78,36 @@ export default function AnalyzePage() {
   const [isDragging, setIsDragging] = useState(false);
   const uploadInputRef = useRef<HTMLInputElement>(null);
 
+  // Text paste state
+  const [pastedText, setPastedText] = useState("");
+  const [textError, setTextError] = useState("");
+
+  // Audio recording state
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioError, setAudioError] = useState("");
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.stop();
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+      }
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const validateUrl = (value: string): boolean => {
     try {
       new URL(value);
@@ -86,6 +130,19 @@ export default function AnalyzePage() {
   };
 
   const handleModeSelect = (mode: AnalysisMode) => {
+    // Stop any active recording before switching
+    if (isRecording) {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.stop();
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+      }
+      if (timerRef.current) clearInterval(timerRef.current);
+      setIsRecording(false);
+      setRecordingTime(0);
+    }
+
     reset();
     setSelectedMode(mode);
     // Reset all states when switching modes
@@ -95,8 +152,16 @@ export default function AnalyzePage() {
     setCameraMode("choose");
     setFile(null);
     setUploadError("");
+    setPastedText("");
+    setTextError("");
+    setAudioBlob(null);
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    setAudioUrl(null);
+    setAudioError("");
+    setRecordingTime(0);
   };
 
+  // ─── URL handlers ───
   const handleUrlSubmit = () => {
     if (!session) { router.push("/login"); return; }
     if (!url.trim()) {
@@ -113,6 +178,7 @@ export default function AnalyzePage() {
     router.push("/processing");
   };
 
+  // ─── Camera handlers ───
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -144,6 +210,7 @@ export default function AnalyzePage() {
     setCameraMode("choose");
   };
 
+  // ─── Upload handlers ───
   const handleUploadFile = (f: File) => {
     setUploadError("");
     if (validateFile(f)) {
@@ -171,6 +238,127 @@ export default function AnalyzePage() {
     reader.readAsDataURL(file);
   };
 
+  // ─── Text paste handlers ───
+  const handleTextSubmit = () => {
+    if (!session) { router.push("/login"); return; }
+    if (pastedText.length < TEXT_MIN_LENGTH) {
+      setTextError(`O texto deve ter no mínimo ${TEXT_MIN_LENGTH} caracteres para análise.`);
+      return;
+    }
+    setTextError("");
+    setInputMethod("text");
+    setRawInput(pastedText);
+    router.push("/processing");
+  };
+
+  // ─── Audio recording handlers ───
+  const startRecording = async () => {
+    setAudioError("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        setAudioBlob(blob);
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+        // Stop all tracks
+        stream.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+
+      timerRef.current = setInterval(() => {
+        setRecordingTime((prev) => {
+          if (prev + 1 >= MAX_RECORDING_SECONDS) {
+            // Auto-stop at max
+            mediaRecorder.stop();
+            setIsRecording(false);
+            if (timerRef.current) clearInterval(timerRef.current);
+            return prev + 1;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    } catch {
+      setAudioError("Não foi possível acessar o microfone. Verifique as permissões do navegador.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+    }
+    if (timerRef.current) clearInterval(timerRef.current);
+    setIsRecording(false);
+  };
+
+  const clearRecording = () => {
+    setAudioBlob(null);
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    setAudioUrl(null);
+    setRecordingTime(0);
+    setAudioError("");
+  };
+
+  const handleAudioSubmit = () => {
+    if (!session) { router.push("/login"); return; }
+    if (!audioBlob) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setInputMethod("audio");
+      setRawInput(event.target?.result as string, "gravacao_audio.webm");
+      router.push("/processing");
+    };
+    reader.readAsDataURL(audioBlob);
+  };
+
+  // ─── Card component ───
+  const ModeCard = ({
+    mode,
+    icon: Icon,
+    title,
+    subtitle,
+  }: {
+    mode: AnalysisMode;
+    icon: React.ComponentType<{ className?: string }>;
+    title: string;
+    subtitle: string;
+  }) => (
+    <button
+      className={`card shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 text-left ${
+        selectedMode === mode
+          ? "border-primary bg-primary/5"
+          : "border-base-300 bg-base-100"
+      }`}
+      onClick={() => handleModeSelect(mode)}
+    >
+      <div className="card-body items-center text-center py-8">
+        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-2 ${
+          selectedMode === mode ? "bg-primary text-white" : "bg-primary/10 text-primary"
+        }`}>
+          <Icon className="text-3xl" />
+        </div>
+        <h3 className="card-title text-base">{title}</h3>
+        <p className="text-xs text-base-content/60">{subtitle}</p>
+      </div>
+    </button>
+  );
+
   return (
     <div className="min-h-screen bg-base-100">
       <Navbar backHref="/" backLabel="Início" />
@@ -184,7 +372,7 @@ export default function AnalyzePage() {
             <div className="text-center mb-8">
               <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Analisar Documento</h2>
               <p className="text-base-content/60 max-w-xl mx-auto">
-                Escolha como enviar seu documento. Nossa IA fará o resto.
+                Envie um documento para análise. Cole o texto, envie um arquivo, use a câmera ou grave um áudio.
               </p>
             </div>
 
@@ -197,76 +385,22 @@ export default function AnalyzePage() {
               </div>
             )}
 
-            {/* Mode Selection Cards */}
-            <div className="grid md:grid-cols-3 gap-4 mb-8">
-              {/* URL Card */}
-              <button
-                className={`card shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 text-left ${
-                  selectedMode === "url"
-                    ? "border-primary bg-primary/5"
-                    : "border-base-300 bg-base-100"
-                }`}
-                onClick={() => handleModeSelect("url")}
-              >
-                <div className="card-body items-center text-center py-8">
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-2 ${
-                    selectedMode === "url" ? "bg-primary text-white" : "bg-primary/10 text-primary"
-                  }`}>
-                    <IoLink className="text-3xl" />
-                  </div>
-                  <h3 className="card-title text-base">Colar URL</h3>
-                  <p className="text-xs text-base-content/60">
-                    Cole o link do documento
-                  </p>
-                </div>
-              </button>
+            {/* Mode Selection Cards — Row 1 */}
+            <div className="grid md:grid-cols-3 gap-4 mb-4">
+              <ModeCard mode="url" icon={IoLink} title="Colar URL" subtitle="Cole o link do documento" />
+              <ModeCard mode="text" icon={IoDocumentText} title="Colar Texto" subtitle="Cole o texto completo do documento" />
+              <ModeCard mode="upload" icon={IoDocument} title="Enviar Arquivo" subtitle="PDF, imagem ou texto" />
+            </div>
 
-              {/* Camera Card */}
-              <button
-                className={`card shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 text-left ${
-                  selectedMode === "camera"
-                    ? "border-primary bg-primary/5"
-                    : "border-base-300 bg-base-100"
-                }`}
-                onClick={() => handleModeSelect("camera")}
-              >
-                <div className="card-body items-center text-center py-8">
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-2 ${
-                    selectedMode === "camera" ? "bg-primary text-white" : "bg-primary/10 text-primary"
-                  }`}>
-                    <IoCamera className="text-3xl" />
-                  </div>
-                  <h3 className="card-title text-base">Tirar Foto</h3>
-                  <p className="text-xs text-base-content/60">
-                    Fotografe o documento
-                  </p>
-                </div>
-              </button>
-
-              {/* Upload Card */}
-              <button
-                className={`card shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 text-left ${
-                  selectedMode === "upload"
-                    ? "border-primary bg-primary/5"
-                    : "border-base-300 bg-base-100"
-                }`}
-                onClick={() => handleModeSelect("upload")}
-              >
-                <div className="card-body items-center text-center py-8">
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-2 ${
-                    selectedMode === "upload" ? "bg-primary text-white" : "bg-primary/10 text-primary"
-                  }`}>
-                    <IoDocument className="text-3xl" />
-                  </div>
-                  <h3 className="card-title text-base">Enviar Arquivo</h3>
-                  <p className="text-xs text-base-content/60">
-                    PDF, imagem ou texto
-                  </p>
-                </div>
-              </button>
+            {/* Mode Selection Cards — Row 2 */}
+            <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-8">
+              <ModeCard mode="camera" icon={IoCamera} title="Tirar Foto" subtitle="Fotografe o documento" />
+              <ModeCard mode="audio" icon={IoMic} title="Gravar Áudio" subtitle="Leia ou descreva o documento" />
             </div>
 
             {/* Dynamic Content Based on Selected Mode */}
+
+            {/* ─── URL Panel ─── */}
             {selectedMode === "url" && (
               <div className="bg-base-200 rounded-2xl p-6 md:p-8 w-full">
                 <div className="form-control">
@@ -304,6 +438,67 @@ export default function AnalyzePage() {
               </div>
             )}
 
+            {/* ─── Text Panel ─── */}
+            {selectedMode === "text" && (
+              <div className="bg-base-200 rounded-2xl p-6 md:p-8 w-full">
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-medium">Texto do documento</span>
+                  </label>
+                  <textarea
+                    className={`textarea textarea-bordered h-48 w-full text-base leading-relaxed ${
+                      textError ? "textarea-error" : ""
+                    }`}
+                    placeholder="Cole aqui o texto completo do documento que deseja analisar..."
+                    value={pastedText}
+                    onChange={(e) => {
+                      const val = e.target.value.slice(0, TEXT_MAX_LENGTH);
+                      setPastedText(val);
+                      if (textError) setTextError("");
+                    }}
+                    maxLength={TEXT_MAX_LENGTH}
+                  />
+                  <label className="label">
+                    <span
+                      className={`label-text-alt ${
+                        pastedText.length >= TEXT_MIN_LENGTH
+                          ? "text-success"
+                          : pastedText.length > 0
+                          ? "text-warning"
+                          : "text-base-content/50"
+                      }`}
+                    >
+                      {pastedText.length} / {TEXT_MIN_LENGTH} caracteres mínimos
+                    </span>
+                  </label>
+                  {textError && (
+                    <label className="label pt-0">
+                      <span className="label-text-alt text-error">{textError}</span>
+                    </label>
+                  )}
+                </div>
+
+                <div className="alert alert-warning mt-4">
+                  <IoAlert className="text-lg shrink-0" />
+                  <span className="text-sm">
+                    Cole o texto completo do documento. Este recurso é para análise de documentos, não para perguntas ou consultas rápidas.
+                  </span>
+                </div>
+
+                <div className="mt-6">
+                  <button
+                    className="btn btn-primary btn-lg w-full gap-2"
+                    onClick={handleTextSubmit}
+                    disabled={pastedText.length < TEXT_MIN_LENGTH}
+                  >
+                    Analisar Agora
+                    <IoArrowForward />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ─── Camera Panel ─── */}
             {selectedMode === "camera" && (
               <div className="bg-base-200 rounded-2xl p-6 md:p-8 w-full">
                 {cameraMode === "choose" ? (
@@ -377,6 +572,7 @@ export default function AnalyzePage() {
               </div>
             )}
 
+            {/* ─── Upload Panel ─── */}
             {selectedMode === "upload" && (
               <div className="bg-base-200 rounded-2xl p-6 md:p-8 w-full">
                 {!file ? (
@@ -461,6 +657,98 @@ export default function AnalyzePage() {
                       <IoArrowForward />
                     </button>
                   </>
+                )}
+              </div>
+            )}
+
+            {/* ─── Audio Panel ─── */}
+            {selectedMode === "audio" && (
+              <div className="bg-base-200 rounded-2xl p-6 md:p-8 w-full">
+                {!audioBlob ? (
+                  <div className="flex flex-col items-center gap-6">
+                    {/* Mic icon */}
+                    <div
+                      className={`w-32 h-32 rounded-full flex items-center justify-center transition-all ${
+                        isRecording
+                          ? "bg-error/20 animate-pulse"
+                          : "bg-primary/10"
+                      }`}
+                    >
+                      <IoMic className={`text-6xl ${isRecording ? "text-error" : "text-primary"}`} />
+                    </div>
+
+                    {/* Timer */}
+                    <p className={`text-3xl font-mono font-bold ${isRecording ? "text-error" : "text-base-content/40"}`}>
+                      {formatTime(recordingTime)}
+                    </p>
+
+                    {/* Instructions */}
+                    <p className="text-sm text-base-content/60 text-center max-w-md">
+                      Leia o documento em voz alta ou descreva seu conteúdo.
+                    </p>
+
+                    {/* Start/Stop button */}
+                    {!isRecording ? (
+                      <button
+                        className="btn btn-primary btn-lg gap-2"
+                        onClick={startRecording}
+                      >
+                        <IoMic className="text-xl" />
+                        Iniciar Gravação
+                      </button>
+                    ) : (
+                      <button
+                        className="btn btn-error btn-lg gap-2"
+                        onClick={stopRecording}
+                      >
+                        <IoStop className="text-xl" />
+                        Parar Gravação
+                      </button>
+                    )}
+
+                    {audioError && (
+                      <div className="alert alert-error w-full">
+                        <IoAlert className="text-lg shrink-0" />
+                        <span className="text-sm">{audioError}</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-6">
+                    {/* Success card */}
+                    <div className="bg-success/10 border border-success/30 rounded-xl p-6 w-full flex items-center gap-4">
+                      <IoCheckmarkCircle className="text-3xl text-success shrink-0" />
+                      <div>
+                        <p className="font-bold">Gravação concluída</p>
+                        <p className="text-sm text-base-content/60">
+                          Duração: {formatTime(recordingTime)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Audio playback */}
+                    {audioUrl && (
+                      <audio controls className="w-full" src={audioUrl} />
+                    )}
+
+                    {/* Action buttons */}
+                    <div className="grid grid-cols-2 gap-4 w-full">
+                      <button
+                        className="btn btn-outline btn-lg gap-2"
+                        onClick={clearRecording}
+                      >
+                        <IoTrash className="text-lg" />
+                        Gravar novamente
+                      </button>
+                      <button
+                        className="btn btn-primary btn-lg gap-2"
+                        onClick={handleAudioSubmit}
+                      >
+                        Analisar Agora
+                        <IoArrowForward />
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             )}

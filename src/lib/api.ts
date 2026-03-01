@@ -121,6 +121,12 @@ export async function apiUploadFile(file: File, title?: string) {
   return request<{ document: ApiDocument }>("POST", "/api/documents/upload", formData, true);
 }
 
+export async function apiUploadAudio(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  return request<{ document: ApiDocument }>("POST", "/api/documents/audio", formData, true);
+}
+
 export async function apiListDocuments() {
   return request<{ documents: ApiDocument[] }>("GET", "/api/documents");
 }

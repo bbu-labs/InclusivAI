@@ -1,4 +1,6 @@
 const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
+const ELEVENLABS_STT_URL = "https://api.elevenlabs.io/v1/speech-to-text";
+const STT_TIMEOUT_MS = 120_000;
 const DEFAULT_VOICE_ID = "UZ8QqWVrz7tMdxiglcLh";
 const MODEL_ID = "eleven_multilingual_v2";
 const MAX_CHARS = 5000;
@@ -38,6 +40,39 @@ export async function generateSpeech(
     }
 
     return await response.arrayBuffer();
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+export async function transcribeAudio(
+  audioBuffer: ArrayBuffer,
+  fileName: string,
+  apiKey: string
+): Promise<string> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), STT_TIMEOUT_MS);
+
+  try {
+    const formData = new FormData();
+    formData.append("file", new File([audioBuffer], fileName, { type: "audio/webm" }));
+    formData.append("model_id", "scribe_v1");
+    formData.append("language_code", "pt");
+
+    const response = await fetch(ELEVENLABS_STT_URL, {
+      method: "POST",
+      headers: { "xi-api-key": apiKey },
+      body: formData,
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => "Unknown error");
+      throw new Error(`ElevenLabs STT error (${response.status}): ${errorText}`);
+    }
+
+    const result = await response.json() as { text: string };
+    return result.text;
   } finally {
     clearTimeout(timeoutId);
   }
