@@ -1,5 +1,7 @@
 # Clausula Oculta - InclusivAI
 
+| [Access Here](http://inclusivai.bbu.app.br) 
+
 **AI system for Brazilian consumer protection** that transforms official, legal, and contractual documents into accessible language for people with different levels of digital literacy.
 
 > Project developed for the **Mistral Hackathon 2026**
