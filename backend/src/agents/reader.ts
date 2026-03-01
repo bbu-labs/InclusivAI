@@ -5,8 +5,7 @@ import { truncateToTokens } from "../lib/token-utils";
 import { extractTextFromPdf } from "../services/pdf";
 
 const INPUT_TOKEN_LIMIT = 32000;
-const OUTPUT_TOKEN_LIMIT = 4096;
-const VISION_OUTPUT_TOKEN_LIMIT = 16384;
+const OUTPUT_TOKEN_LIMIT = 16384;
 
 export type StructuredDocument = {
   titulo: string;
@@ -67,7 +66,7 @@ export function readFromImage(
       imageBase64,
       mimeType,
       READER_IMAGE_PROMPT,
-      VISION_OUTPUT_TOKEN_LIMIT
+      OUTPUT_TOKEN_LIMIT
     )
   );
 }
