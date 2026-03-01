@@ -237,10 +237,10 @@ analyze.post(
     const { question } = c.req.valid("json");
     const supabaseAdmin = c.get("supabaseAdmin");
 
-    // Fetch analysis + document
+    // Fetch analysis
     const { data: analysis, error: aErr } = await supabaseAdmin
       .from("analyses")
-      .select("*, documents(raw_text)")
+      .select("id, summary, document_id, user_id")
       .eq("id", analysisId)
       .eq("user_id", user.id)
       .single();
@@ -248,6 +248,13 @@ analyze.post(
     if (aErr || !analysis) {
       return c.json({ error: "ANALYSIS_NOT_FOUND" }, 404);
     }
+
+    // Fetch document raw_text separately to avoid join ambiguity
+    const { data: doc } = await supabaseAdmin
+      .from("documents")
+      .select("raw_text")
+      .eq("id", analysis.document_id)
+      .single();
 
     // Fetch user country
     const { data: profile } = await supabaseAdmin
@@ -258,8 +265,10 @@ analyze.post(
 
     const userCountry: SupportedCountry = (profile?.country as SupportedCountry) || "BR";
 
-    const documentText = (analysis.documents as { raw_text: string } | null)?.raw_text || "";
+    const documentText = doc?.raw_text || "";
     const summaryStr = JSON.stringify(analysis.summary);
+
+    console.log("[QA] analysis:", analysisId, "| docText length:", documentText.length, "| summaryStr length:", summaryStr.length);
 
     const mistralClient = createMistralClient(c.env.MISTRAL_API_KEY);
 
