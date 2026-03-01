@@ -120,7 +120,8 @@ auth.patch(
       .single();
 
     if (error) {
-      return c.json({ error: "Erro ao atualizar perfil" }, 500);
+      console.error("[PATCH /profile] Supabase error:", error);
+      return c.json({ error: "Erro ao atualizar o perfil" }, 500);
     }
 
     return c.json({ profile });

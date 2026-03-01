@@ -4,7 +4,8 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { apiUpdateProfile } from "@/lib/api";
+import { apiUpdateProfile, ApiError } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 import {
   type AgeGroup,
   deriveAgeGroup,
@@ -25,6 +26,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { t } = useTranslation();
   const { profile, setProfile } = useAuth();
+  const { showToast } = useToast();
   const [step, setStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -104,8 +106,10 @@ export default function OnboardingPage() {
       const { profile: updated } = await apiUpdateProfile(updates as never);
       setProfile(updated);
       router.push("/analyze");
-    } catch {
+    } catch (err) {
       setIsSubmitting(false);
+      const message = err instanceof ApiError ? err.message : t("onboarding.errors.updateFailed");
+      showToast(message, "error");
     }
   }, [
     ageRange,
@@ -117,6 +121,8 @@ export default function OnboardingPage() {
     language,
     setProfile,
     router,
+    showToast,
+    t,
   ]);
 
   const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));

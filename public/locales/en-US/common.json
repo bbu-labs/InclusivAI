@@ -150,6 +150,9 @@
       "seniorTip2": "You can always change settings later",
       "seniorTip3": "If you need help, ask the AI about the document",
       "finish": "Start analyzing"
+    },
+    "errors": {
+      "updateFailed": "Could not save your preferences. Please try again."
     }
   },
   "analyze": {
