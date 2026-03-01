@@ -335,8 +335,8 @@ export function GeneralResult({ summary }: { summary: GeneralSummary }) {
           <h3 className="font-bold text-lg mb-4">{t("analysisResults.legalBasis")}</h3>
           <div className="grid gap-2">
             {summary.base_legal.map((b, i) => (
-              <div key={i} className="flex gap-3 text-sm">
-                <span className="font-bold text-primary whitespace-nowrap">
+              <div key={i} className="flex flex-col gap-1 text-sm">
+                <span className="font-bold text-primary">
                   {b.lei} - {b.artigo}
                 </span>
                 <span className="text-base-content/60">{b.relevancia}</span>
