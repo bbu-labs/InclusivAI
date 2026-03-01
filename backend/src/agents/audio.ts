@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { generateSpeech } from "../services/elevenlabs";
+import type { SupportedLanguage } from "../types";
 
 // Estimate audio duration: ~150 words per minute, ~5 chars per word in Portuguese
 function estimateDuration(text: string): number {
@@ -27,7 +28,8 @@ export async function generateAudio(
   analysisId: string,
   supabaseAdmin: SupabaseClient,
   kvCache: KVNamespace | undefined,
-  elevenLabsKey: string
+  elevenLabsKey: string,
+  language?: SupportedLanguage
 ): Promise<AudioResult> {
   const hash = await hashText(summaryText);
   const cacheKey = `audio:${analysisId}:${hash}`;
@@ -41,7 +43,7 @@ export async function generateAudio(
   }
 
   // Generate speech
-  const audioBytes = await generateSpeech(summaryText, elevenLabsKey);
+  const audioBytes = await generateSpeech(summaryText, elevenLabsKey, language);
 
   // Upload to Supabase Storage
   const filePath = `audio/${analysisId}/${hash}.mp3`;

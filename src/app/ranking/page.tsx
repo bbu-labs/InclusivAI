@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiGetRanking } from "@/lib/api";
 import type { ApiRanking } from "@/types";
@@ -10,6 +11,7 @@ import { IoTrophy, IoWarning, IoRemove, IoCheckmarkCircle } from "react-icons/io
 import Navbar from "@/components/Navbar";
 
 export default function RankingPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { session, isLoading: authLoading } = useAuth();
   const [rankings, setRankings] = useState<ApiRanking[]>([]);
@@ -38,10 +40,10 @@ export default function RankingPage() {
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-3">
               <IoTrophy className="text-3xl text-warning" />
-              <h1 className="text-3xl font-extrabold">Ranking de Empresas</h1>
+              <h1 className="text-3xl font-extrabold">{t("ranking.title")}</h1>
             </div>
             <p className="text-base-content/60 max-w-lg mx-auto">
-              Empresas ordenadas por nota média de abusividade nos termos de uso
+              {t("ranking.subtitle")}
             </p>
           </div>
 
@@ -61,9 +63,9 @@ export default function RankingPage() {
           ) : rankings.length === 0 ? (
             <div className="text-center py-12">
               <IoTrophy className="text-6xl text-base-content/20 mx-auto mb-4" />
-              <p className="text-base-content/50 mb-4">Nenhuma empresa no ranking ainda.</p>
+              <p className="text-base-content/50 mb-4">{t("ranking.empty")}</p>
               <Link href="/analyze" className="btn btn-primary">
-                Analisar um documento
+                {t("ranking.emptyCta")}
               </Link>
             </div>
           ) : (
@@ -71,18 +73,18 @@ export default function RankingPage() {
               <table className="table table-zebra w-full">
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>Empresa</th>
-                    <th>Nota Abusividade</th>
-                    <th>Análises</th>
-                    <th className="hidden md:table-cell">Última Análise</th>
+                    <th>{t("ranking.colRank")}</th>
+                    <th>{t("ranking.colCompany")}</th>
+                    <th>{t("ranking.colScore")}</th>
+                    <th>{t("ranking.colAnalyses")}</th>
+                    <th className="hidden md:table-cell">{t("ranking.colLastAnalysis")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rankings.map((r, i) => {
                     const isHigh = r.avg_abuse_score >= 7;
                     const isMedium = r.avg_abuse_score >= 4 && r.avg_abuse_score < 7;
-                    const severityLabel = isHigh ? "Alto" : isMedium ? "Médio" : "Baixo";
+                    const severityLabel = isHigh ? t("severity.alto") : isMedium ? t("severity.medio") : t("severity.baixo");
                     const SeverityIcon = isHigh ? IoWarning : isMedium ? IoRemove : IoCheckmarkCircle;
 
                     return (

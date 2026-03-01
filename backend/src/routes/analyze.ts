@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import type { AppEnv } from "../types";
+import type { AppEnv, SupportedCountry, SupportedLanguage } from "../types";
 import { requireAuth } from "../middleware/auth";
 import { ANALYSIS_TYPES, SIMPLIFICATION_LEVELS } from "../types";
 import { createMistralClient } from "../services/mistral";
@@ -28,12 +28,15 @@ analyze.post(
     const { analysis_type, simplification_level } = c.req.valid("json");
     const supabaseAdmin = c.get("supabaseAdmin");
 
-    // Check rate limit: 10 analyses/month for free tier
+    // Check rate limit and fetch country/language
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("plan, analyses_this_month, month_reset_at")
+      .select("plan, analyses_this_month, month_reset_at, country, language")
       .eq("id", user.id)
       .single();
+
+    const userCountry: SupportedCountry = (profile?.country as SupportedCountry) || "BR";
+    const userLanguage: SupportedLanguage = (profile?.language as SupportedLanguage) || "pt-BR";
 
     if (profile) {
       const limit = profile.plan === "premium" ? 100 : 10;
@@ -43,9 +46,8 @@ analyze.post(
       if (count >= limit) {
         return c.json(
           {
-            error: "Limite de análises atingido",
-            detail: `Você já usou ${count}/${limit} análises este mês`,
-            suggestion: "Aguarde o próximo mês ou faça upgrade para o plano premium",
+            error: "RATE_LIMIT_EXCEEDED",
+            detail: `${count}/${limit}`,
           },
           429
         );
@@ -62,16 +64,15 @@ analyze.post(
       .single();
 
     if (docError || !doc) {
-      return c.json({ error: "Documento não encontrado" }, 404);
+      return c.json({ error: "DOCUMENT_NOT_FOUND" }, 404);
     }
 
-    // For text_input, raw_text must exist; for file uploads, file_path must exist
     const isFileUpload = doc.source_type === "pdf_upload" || doc.source_type === "image_upload";
     if (!isFileUpload && !doc.raw_text) {
-      return c.json({ error: "Documento sem texto para analisar" }, 400);
+      return c.json({ error: "DOCUMENT_NO_TEXT" }, 400);
     }
     if (isFileUpload && !doc.file_path) {
-      return c.json({ error: "Arquivo do documento não encontrado" }, 400);
+      return c.json({ error: "DOCUMENT_NO_FILE" }, 400);
     }
 
     const mistralClient = createMistralClient(c.env.MISTRAL_API_KEY);
@@ -85,6 +86,7 @@ analyze.post(
         documentId,
         simplificationLevel: simplification_level,
         analysisType: analysis_type === "auto" ? "general" : analysis_type,
+        country: userCountry,
       },
       mistralClient,
       supabaseAdmin
@@ -108,7 +110,7 @@ analyze.get("/:analysisId", async (c) => {
     .single();
 
   if (error || !data) {
-    return c.json({ error: "Análise não encontrada" }, 404);
+    return c.json({ error: "ANALYSIS_NOT_FOUND" }, 404);
   }
 
   return c.json({ analysis: data });
@@ -129,13 +131,22 @@ analyze.post("/:analysisId/audio", async (c) => {
     .single();
 
   if (error || !analysis) {
-    return c.json({ error: "Análise não encontrada" }, 404);
+    return c.json({ error: "ANALYSIS_NOT_FOUND" }, 404);
   }
 
   // Return cached audio if it exists
   if (analysis.audio_url) {
     return c.json({ audio: { audioUrl: analysis.audio_url, cached: true } });
   }
+
+  // Fetch user language for TTS voice selection
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("language")
+    .eq("id", user.id)
+    .single();
+
+  const userLanguage: SupportedLanguage = (profile?.language as SupportedLanguage) || "pt-BR";
 
   // Build audio text from summary
   const summary = analysis.summary as Record<string, unknown>;
@@ -151,10 +162,10 @@ analyze.post("/:analysisId/audio", async (c) => {
     audioText += summary.explicacao + "\n\n";
   }
   if (summary.recomendacao) {
-    audioText += "Recomendação: " + summary.recomendacao + "\n\n";
+    audioText += summary.recomendacao + "\n\n";
   }
   if (summary.acao_recomendada) {
-    audioText += "Ação recomendada: " + summary.acao_recomendada + "\n\n";
+    audioText += summary.acao_recomendada + "\n\n";
   }
   if (Array.isArray(summary.pontos_criticos)) {
     for (const ponto of summary.pontos_criticos as Array<{ item: string; explicacao: string }>) {
@@ -163,7 +174,7 @@ analyze.post("/:analysisId/audio", async (c) => {
   }
 
   if (!audioText.trim()) {
-    return c.json({ error: "Análise sem conteúdo para gerar áudio" }, 400);
+    return c.json({ error: "ANALYSIS_NO_AUDIO_CONTENT" }, 400);
   }
 
   const kvCache = "INCLUSIVAI_CACHE" in c.env ? (c.env as Record<string, unknown>).INCLUSIVAI_CACHE as KVNamespace : undefined;
@@ -175,36 +186,32 @@ analyze.post("/:analysisId/audio", async (c) => {
       analysisId,
       supabaseAdmin,
       kvCache,
-      c.env.ELEVENLABS_API_KEY
+      c.env.ELEVENLABS_API_KEY,
+      userLanguage
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
 
-    // ElevenLabs 401 — check if it's quota-related or a plain auth error
     if (/ElevenLabs API error.*401/.test(message)) {
       if (/quota|credit|billing|subscription/i.test(message)) {
-        return c.json({ error: "Serviço de áudio indisponível", detail: message, fallback: true }, 402);
+        return c.json({ error: "AUDIO_QUOTA_EXCEEDED", detail: message, fallback: true }, 402);
       }
-      return c.json({ error: "Falha de autenticação no serviço de áudio", detail: message, fallback: true }, 401);
+      return c.json({ error: "AUDIO_AUTH_ERROR", detail: message, fallback: true }, 401);
     }
 
-    // ElevenLabs 422 with quota/billing keywords
     if (/ElevenLabs API error.*422/.test(message) && /quota|credit|billing|subscription/i.test(message)) {
-      return c.json({ error: "Serviço de áudio indisponível", detail: message, fallback: true }, 402);
+      return c.json({ error: "AUDIO_QUOTA_EXCEEDED", detail: message, fallback: true }, 402);
     }
 
-    // ElevenLabs rate limit
     if (/ElevenLabs API error.*429/.test(message)) {
-      return c.json({ error: "Limite de requisições atingido", detail: message, fallback: true }, 429);
+      return c.json({ error: "AUDIO_RATE_LIMIT", detail: message, fallback: true }, 429);
     }
 
-    // Supabase upload errors
     if (message.includes("Failed to upload audio")) {
-      return c.json({ error: "Erro ao salvar áudio", detail: message }, 500);
+      return c.json({ error: "AUDIO_UPLOAD_ERROR", detail: message }, 500);
     }
 
-    // Other ElevenLabs / unknown errors
-    return c.json({ error: "Erro no serviço de áudio", detail: message, fallback: true }, 502);
+    return c.json({ error: "AUDIO_SERVICE_ERROR", detail: message, fallback: true }, 502);
   }
 
   // Update analysis with audio URL
@@ -217,7 +224,7 @@ analyze.post("/:analysisId/audio", async (c) => {
 });
 
 const questionSchema = z.object({
-  question: z.string().min(3, "Pergunta muito curta").max(500),
+  question: z.string().min(3).max(500),
 });
 
 // POST /api/analyze/:analysisId/ask — ask a question about the analysis
@@ -239,17 +246,26 @@ analyze.post(
       .single();
 
     if (aErr || !analysis) {
-      return c.json({ error: "Análise não encontrada" }, 404);
+      return c.json({ error: "ANALYSIS_NOT_FOUND" }, 404);
     }
+
+    // Fetch user country
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("country")
+      .eq("id", user.id)
+      .single();
+
+    const userCountry: SupportedCountry = (profile?.country as SupportedCountry) || "BR";
 
     const documentText = (analysis.documents as { raw_text: string } | null)?.raw_text || "";
     const summaryStr = JSON.stringify(analysis.summary);
 
     const mistralClient = createMistralClient(c.env.MISTRAL_API_KEY);
-    const result = await askQuestion(question, documentText, summaryStr, mistralClient);
+    const result = await askQuestion(question, documentText, summaryStr, mistralClient, userCountry);
 
     if (!result.success || !result.data) {
-      return c.json({ error: "Não foi possível responder à pergunta" }, 502);
+      return c.json({ error: "QA_FAILED" }, 502);
     }
 
     // Save to questions table
@@ -266,7 +282,6 @@ analyze.post(
       .single();
 
     if (saveErr) {
-      // Still return the answer even if save fails
       return c.json({ question: result.data });
     }
 
@@ -288,7 +303,7 @@ analyze.get("/:analysisId/questions", async (c) => {
     .order("created_at", { ascending: true });
 
   if (error) {
-    return c.json({ error: "Erro ao buscar perguntas" }, 500);
+    return c.json({ error: "QA_LIST_ERROR" }, 500);
   }
 
   return c.json({ questions: data });

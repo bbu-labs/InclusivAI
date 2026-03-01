@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { apiGetQuestions, apiAskQuestion, ApiError } from "@/lib/api";
 import type { ApiQuestion } from "@/types";
 import { IoSend, IoChatbubbles } from "react-icons/io5";
@@ -8,6 +9,7 @@ import { IoSend, IoChatbubbles } from "react-icons/io5";
 const MAX_QUESTIONS_FREE = 5;
 
 export default function QAPanel({ analysisId }: { analysisId: string }) {
+  const { t } = useTranslation();
   const [questions, setQuestions] = useState<ApiQuestion[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,7 +33,7 @@ export default function QAPanel({ analysisId }: { analysisId: string }) {
       setQuestions((prev) => [...prev, question]);
       setInput("");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Erro ao enviar pergunta");
+      setError(err instanceof ApiError ? err.message : t("qa.error"));
     } finally {
       setLoading(false);
     }
@@ -41,11 +43,11 @@ export default function QAPanel({ analysisId }: { analysisId: string }) {
     <div className="bg-base-200 rounded-2xl p-6">
       <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
         <IoChatbubbles className="text-primary" />
-        Perguntas sobre a análise
+        {t("qa.title")}
       </h3>
 
       <p className="text-xs text-base-content/50 mb-4">
-        {questions.length} de {MAX_QUESTIONS_FREE} perguntas
+        {t("qa.count", { n: questions.length, max: MAX_QUESTIONS_FREE })}
       </p>
 
       {/* Previous Q&A */}
@@ -64,7 +66,7 @@ export default function QAPanel({ analysisId }: { analysisId: string }) {
                 <p className="text-sm text-base-content/70">{q.answer}</p>
                 {q.source_excerpt && (
                   <p className="text-xs text-base-content/40 mt-2 italic">
-                    Fonte: &ldquo;{q.source_excerpt}&rdquo;
+                    {t("qa.source", { excerpt: q.source_excerpt })}
                   </p>
                 )}
               </div>
@@ -78,7 +80,7 @@ export default function QAPanel({ analysisId }: { analysisId: string }) {
         <div className="flex gap-2">
           <input
             type="text"
-            placeholder="Faça uma pergunta sobre o documento..."
+            placeholder={t("qa.placeholder")}
             className="input input-bordered flex-1 input-sm"
             value={input}
             onChange={(e) => setInput(e.target.value)}

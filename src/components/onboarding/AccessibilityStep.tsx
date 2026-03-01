@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import type { AgeGroup } from "@/lib/experience-profiles";
 
 interface AccessibilityStepProps {
@@ -21,14 +22,15 @@ export default function AccessibilityStep({
   onNext,
   onBack,
 }: AccessibilityStepProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-6 py-4 animate-fade-in">
       <div className="text-center space-y-2">
         <h2 className="text-xl font-bold text-base-content">
-          Acessibilidade
+          {t("onboarding.accessibility.title")}
         </h2>
         <p className="text-base-content/70">
-          Ajuste o visual para sua melhor leitura.
+          {t("onboarding.accessibility.subtitle")}
         </p>
       </div>
 
@@ -48,7 +50,7 @@ export default function AccessibilityStep({
             />
           </svg>
           <span>
-            Configuramos para melhor leitura. Ajuste como preferir.
+            {t("onboarding.accessibility.seniorInfo")}
           </span>
         </div>
       )}
@@ -56,7 +58,7 @@ export default function AccessibilityStep({
       {/* Font Size */}
       <div className="space-y-3">
         <label className="flex items-center justify-between">
-          <span className="font-medium">Tamanho do texto</span>
+          <span className="font-medium">{t("onboarding.accessibility.fontSize")}</span>
           <span className="text-sm text-base-content/60">{fontSize}px</span>
         </label>
         <input
@@ -80,8 +82,7 @@ export default function AccessibilityStep({
           style={{ fontSize: `${fontSize}px` }}
         >
           <p className="leading-relaxed">
-            Este é um exemplo de como o texto ficará no aplicativo. Ajuste até
-            ficar confortável para sua leitura.
+            {t("onboarding.accessibility.preview")}
           </p>
         </div>
       </div>
@@ -89,9 +90,9 @@ export default function AccessibilityStep({
       {/* High Contrast */}
       <div className="flex items-center justify-between p-4 bg-base-200 rounded-xl border border-base-300">
         <div className="space-y-1">
-          <div className="font-medium">Alto contraste</div>
+          <div className="font-medium">{t("onboarding.accessibility.highContrast")}</div>
           <div className="text-sm text-base-content/60">
-            Bordas e textos mais visíveis
+            {t("onboarding.accessibility.highContrastDesc")}
           </div>
         </div>
         <input
@@ -106,17 +107,17 @@ export default function AccessibilityStep({
       {highContrast && (
         <div className="p-4 rounded-xl border-2 border-base-content/30 bg-base-100">
           <p className="font-medium text-base-content">
-            Prévia com alto contraste ativado — bordas e textos mais fortes.
+            {t("onboarding.accessibility.highContrastPreview")}
           </p>
         </div>
       )}
 
       <div className="flex justify-between mt-4">
         <button onClick={onBack} className="btn btn-ghost">
-          Voltar
+          {t("common.back")}
         </button>
         <button onClick={onNext} className="btn btn-primary xp-btn">
-          Continuar
+          {t("common.next")}
         </button>
       </div>
     </div>

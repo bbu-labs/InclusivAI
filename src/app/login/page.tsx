@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { apiLogin } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +12,7 @@ import Navbar from "@/components/Navbar";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { setSession, setProfile } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,7 +44,7 @@ export default function LoginPage() {
       router.push(profile.has_onboarded ? "/analyze" : "/onboarding");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Erro ao fazer login"
+        err instanceof Error ? err.message : t("login.error")
       );
     } finally {
       setLoading(false);
@@ -57,9 +59,9 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-extrabold mb-2">Entrar</h1>
+            <h1 className="text-3xl font-extrabold mb-2">{t("login.title")}</h1>
             <p className="text-base-content/60">
-              Acesse sua conta para analisar documentos
+              {t("login.subtitle")}
             </p>
           </div>
 
@@ -72,13 +74,13 @@ export default function LoginPage() {
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-medium">Email</span>
+                <span className="label-text font-medium">{t("login.email")}</span>
               </label>
               <label className="input input-bordered flex items-center gap-3">
                 <IoMail className="text-base-content/40" />
                 <input
                   type="email"
-                  placeholder="seu@email.com"
+                  placeholder={t("login.emailPlaceholder")}
                   className="grow"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -89,13 +91,13 @@ export default function LoginPage() {
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-medium">Senha</span>
+                <span className="label-text font-medium">{t("login.password")}</span>
               </label>
               <label className="input input-bordered flex items-center gap-3">
                 <IoLockClosed className="text-base-content/40" />
                 <input
                   type="password"
-                  placeholder="Sua senha"
+                  placeholder={t("login.passwordPlaceholder")}
                   className="grow"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -105,7 +107,7 @@ export default function LoginPage() {
               </label>
               <div className="label">
                 <Link href="/forgot-password" className="label-text-alt text-primary hover:underline">
-                  Esqueceu a senha?
+                  {t("login.forgotPassword")}
                 </Link>
               </div>
             </div>
@@ -118,15 +120,15 @@ export default function LoginPage() {
               {loading ? (
                 <span className="loading loading-spinner loading-sm" />
               ) : (
-                "Entrar"
+                t("login.submit")
               )}
             </button>
           </form>
 
           <p className="text-center text-sm text-base-content/60 mt-6">
-            Não tem conta?{" "}
+            {t("login.noAccount")}{" "}
             <Link href="/signup" className="text-primary font-semibold hover:underline">
-              Criar conta
+              {t("login.createAccount")}
             </Link>
           </p>
         </div>

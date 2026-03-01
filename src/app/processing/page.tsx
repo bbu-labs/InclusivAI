@@ -15,15 +15,7 @@ import {
   IoRefresh,
 } from "react-icons/io5";
 import Navbar from "@/components/Navbar";
-
-const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
-
-const PROCESSING_STEPS = [
-  { id: "upload", label: "Enviando documento...", icon: IoDocumentText },
-  { id: "extract", label: "Extraindo texto do documento...", icon: IoScan },
-  { id: "clean", label: "Processando conteúdo...", icon: IoColorWand },
-  { id: "identify", label: "Identificando tipo de documento...", icon: IoSearch },
-];
+import { useTranslation } from "react-i18next";
 
 function dataUrlToFile(dataUrl: string, fileName: string): File {
   const [header, base64] = dataUrl.split(",");
@@ -40,6 +32,14 @@ export default function ProcessingPage() {
   const router = useRouter();
   const { state, setDocument } = useApp();
   const { session } = useAuth();
+  const { t } = useTranslation();
+  const STEPS = [t("analyze.stepInput"), t("analyze.stepProcessing"), t("analyze.stepConfirmation"), t("analyze.stepResult")];
+  const PROCESSING_STEPS = [
+    { id: "upload", label: t("processing.sending"), icon: IoDocumentText },
+    { id: "extract", label: t("processing.extracting"), icon: IoScan },
+    { id: "clean", label: t("processing.processing"), icon: IoColorWand },
+    { id: "identify", label: t("processing.identifying"), icon: IoSearch },
+  ];
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +105,7 @@ export default function ProcessingPage() {
         if (err instanceof ApiError) {
           setError(err.message);
         } else {
-          setError("Erro ao processar documento. Tente novamente.");
+          setError(t("processing.error"));
         }
       }
     };
@@ -124,7 +124,7 @@ export default function ProcessingPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      <Navbar statusText="Processando..." hideUserMenu />
+      <Navbar statusText={t("processing.navStatus")} hideUserMenu />
 
       {/* Main Content */}
       <div className="pt-16">
@@ -139,7 +139,7 @@ export default function ProcessingPage() {
                 </div>
                 <button className="btn btn-primary btn-lg gap-2" onClick={handleRetry}>
                   <IoRefresh className="text-lg" />
-                  Tentar novamente
+                  {t("common.retry")}
                 </button>
               </>
             ) : (
@@ -150,10 +150,10 @@ export default function ProcessingPage() {
                 </div>
 
                 <h2 className="text-2xl md:text-3xl font-extrabold mb-3 text-center">
-                  Analisando seu documento
+                  {t("processing.title")}
                 </h2>
                 <p className="text-base-content/60 text-center mb-8 max-w-lg">
-                  Aguarde enquanto processamos o conteúdo...
+                  {t("processing.subtitle")}
                 </p>
 
                 {/* Processing steps */}
@@ -205,8 +205,7 @@ export default function ProcessingPage() {
                     max={PROCESSING_STEPS.length}
                   />
                   <p className="text-sm text-center text-base-content/50 mt-3">
-                    {completedSteps.length} de {PROCESSING_STEPS.length} etapas
-                    concluídas
+                    {t("processing.progress", { n: completedSteps.length, total: PROCESSING_STEPS.length })}
                   </p>
                 </div>
               </>

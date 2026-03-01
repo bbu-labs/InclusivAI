@@ -22,8 +22,7 @@ import {
   IoTrash,
 } from "react-icons/io5";
 import Navbar from "@/components/Navbar";
-
-const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
+import { useTranslation } from "react-i18next";
 
 type AnalysisMode = "url" | "camera" | "upload" | "text" | "audio";
 type CameraMode = "choose" | "preview";
@@ -60,6 +59,8 @@ export default function AnalyzePage() {
   const { setRawInput, setInputMethod, reset } = useApp();
   const { session } = useAuth();
   const { profile: xp } = useExperience();
+  const { t } = useTranslation();
+  const STEPS = [t("analyze.stepInput"), t("analyze.stepProcessing"), t("analyze.stepConfirmation"), t("analyze.stepResult")];
   const [selectedMode, setSelectedMode] = useState<AnalysisMode | null>(null);
 
   // URL state
@@ -119,11 +120,11 @@ export default function AnalyzePage() {
 
   const validateFile = (f: File): boolean => {
     if (!ACCEPTED_TYPES.includes(f.type)) {
-      setUploadError("Formato não suportado. Use PDF, DOC, DOCX ou imagem.");
+      setUploadError(t("analyze.uploadErrorFormat"));
       return false;
     }
     if (f.size > 5 * 1024 * 1024) {
-      setUploadError("Arquivo muito grande. O limite é 5MB.");
+      setUploadError(t("analyze.uploadErrorSize"));
       return false;
     }
     return true;
@@ -165,11 +166,11 @@ export default function AnalyzePage() {
   const handleUrlSubmit = () => {
     if (!session) { router.push("/login"); return; }
     if (!url.trim()) {
-      setUrlError("Por favor, insira uma URL.");
+      setUrlError(t("analyze.urlRequired"));
       return;
     }
     if (!validateUrl(url)) {
-      setUrlError("URL inválida. Insira uma URL completa (ex: https://exemplo.com).");
+      setUrlError(t("analyze.urlInvalid"));
       return;
     }
     setUrlError("");
@@ -184,7 +185,7 @@ export default function AnalyzePage() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      alert("Por favor, selecione uma imagem válida.");
+      alert(t("analyze.cameraImageRequired"));
       return;
     }
 
@@ -242,7 +243,7 @@ export default function AnalyzePage() {
   const handleTextSubmit = () => {
     if (!session) { router.push("/login"); return; }
     if (pastedText.length < TEXT_MIN_LENGTH) {
-      setTextError(`O texto deve ter no mínimo ${TEXT_MIN_LENGTH} caracteres para análise.`);
+      setTextError(t("analyze.textMinLength", { min: TEXT_MIN_LENGTH }));
       return;
     }
     setTextError("");
@@ -294,7 +295,7 @@ export default function AnalyzePage() {
         });
       }, 1000);
     } catch {
-      setAudioError("Não foi possível acessar o microfone. Verifique as permissões do navegador.");
+      setAudioError(t("analyze.audioMicError"));
     }
   };
 
@@ -361,7 +362,7 @@ export default function AnalyzePage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      <Navbar backHref="/" backLabel="Início" />
+      <Navbar backHref="/" backLabel={t("analyze.backLabel")} />
 
       {/* ───── Main Content ───── */}
       <div className="pt-16">
@@ -370,9 +371,9 @@ export default function AnalyzePage() {
 
           <div className="mt-8 max-w-3xl mx-auto">
             <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Analisar Documento</h2>
+              <h2 className="text-2xl md:text-3xl font-extrabold mb-3">{t("analyze.title")}</h2>
               <p className="text-base-content/60 max-w-xl mx-auto">
-                Envie um documento para análise. Cole o texto, envie um arquivo, use a câmera ou grave um áudio.
+                {t("analyze.subtitle")}
               </p>
             </div>
 
@@ -381,21 +382,21 @@ export default function AnalyzePage() {
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Dica: Escolha uma das opções abaixo. Se você tem um documento em papel, use &quot;Tirar Foto&quot;.</span>
+                <span>{t("analyze.seniorTip")}</span>
               </div>
             )}
 
             {/* Mode Selection Cards — Row 1 */}
             <div className="grid md:grid-cols-3 gap-4 mb-4">
-              <ModeCard mode="url" icon={IoLink} title="Colar URL" subtitle="Cole o link do documento" />
-              <ModeCard mode="text" icon={IoDocumentText} title="Colar Texto" subtitle="Cole o texto completo do documento" />
-              <ModeCard mode="upload" icon={IoDocument} title="Enviar Arquivo" subtitle="PDF, imagem ou texto" />
+              <ModeCard mode="url" icon={IoLink} title={t("analyze.modeUrl")} subtitle={t("analyze.modeUrlDesc")} />
+              <ModeCard mode="text" icon={IoDocumentText} title={t("analyze.modeText")} subtitle={t("analyze.modeTextDesc")} />
+              <ModeCard mode="upload" icon={IoDocument} title={t("analyze.modeFile")} subtitle={t("analyze.modeFileDesc")} />
             </div>
 
             {/* Mode Selection Cards — Row 2 */}
             <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-8">
-              <ModeCard mode="camera" icon={IoCamera} title="Tirar Foto" subtitle="Fotografe o documento" />
-              <ModeCard mode="audio" icon={IoMic} title="Gravar Áudio" subtitle="Leia ou descreva o documento" />
+              <ModeCard mode="camera" icon={IoCamera} title={t("analyze.modeCamera")} subtitle={t("analyze.modeCameraDesc")} />
+              <ModeCard mode="audio" icon={IoMic} title={t("analyze.modeAudio")} subtitle={t("analyze.modeAudioDesc")} />
             </div>
 
             {/* Dynamic Content Based on Selected Mode */}
@@ -405,11 +406,11 @@ export default function AnalyzePage() {
               <div className="bg-base-200 rounded-2xl p-6 md:p-8 w-full">
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium">URL do documento</span>
+                    <span className="label-text font-medium">{t("analyze.urlLabel")}</span>
                   </label>
                   <input
                     type="url"
-                    placeholder="https://exemplo.com/termos-de-servico"
+                    placeholder={t("analyze.urlPlaceholder")}
                     className={`input input-bordered input-lg w-full ${urlError ? "input-error" : ""}`}
                     value={url}
                     onChange={(e) => {
@@ -431,7 +432,7 @@ export default function AnalyzePage() {
                     onClick={handleUrlSubmit}
                     disabled={!url.trim()}
                   >
-                    Analisar Agora
+                    {t("analyze.submit")}
                     <IoArrowForward />
                   </button>
                 </div>
@@ -443,13 +444,13 @@ export default function AnalyzePage() {
               <div className="bg-base-200 rounded-2xl p-6 md:p-8 w-full">
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium">Texto do documento</span>
+                    <span className="label-text font-medium">{t("analyze.textLabel")}</span>
                   </label>
                   <textarea
                     className={`textarea textarea-bordered h-48 w-full text-base leading-relaxed ${
                       textError ? "textarea-error" : ""
                     }`}
-                    placeholder="Cole aqui o texto completo do documento que deseja analisar..."
+                    placeholder={t("analyze.textPlaceholder")}
                     value={pastedText}
                     onChange={(e) => {
                       const val = e.target.value.slice(0, TEXT_MAX_LENGTH);
@@ -468,7 +469,7 @@ export default function AnalyzePage() {
                           : "text-base-content/50"
                       }`}
                     >
-                      {pastedText.length} / {TEXT_MIN_LENGTH} caracteres mínimos
+                      {pastedText.length} / {TEXT_MIN_LENGTH} {t("analyze.textMinChars")}
                     </span>
                   </label>
                   {textError && (
@@ -481,7 +482,7 @@ export default function AnalyzePage() {
                 <div className="alert alert-warning mt-4">
                   <IoAlert className="text-lg shrink-0" />
                   <span className="text-sm">
-                    Cole o texto completo do documento. Este recurso é para análise de documentos, não para perguntas ou consultas rápidas.
+                    {t("analyze.textWarning")}
                   </span>
                 </div>
 
@@ -491,7 +492,7 @@ export default function AnalyzePage() {
                     onClick={handleTextSubmit}
                     disabled={pastedText.length < TEXT_MIN_LENGTH}
                   >
-                    Analisar Agora
+                    {t("analyze.submit")}
                     <IoArrowForward />
                   </button>
                 </div>
@@ -509,7 +510,7 @@ export default function AnalyzePage() {
                       onClick={() => cameraInputRef.current?.click()}
                     >
                       <IoCamera className="text-4xl" />
-                      <span className="text-sm">Abrir Câmera</span>
+                      <span className="text-sm">{t("analyze.cameraOpen")}</span>
                     </button>
 
                     <input
@@ -527,7 +528,7 @@ export default function AnalyzePage() {
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <IoImage className="text-4xl" />
-                      <span className="text-sm">Selecionar Arquivo</span>
+                      <span className="text-sm">{t("analyze.cameraSelectFile")}</span>
                     </button>
 
                     <input
@@ -560,10 +561,10 @@ export default function AnalyzePage() {
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <button className="btn btn-outline btn-lg" onClick={handleCameraClear}>
-                        Tirar outra
+                        {t("analyze.cameraTakeAnother")}
                       </button>
                       <button className="btn btn-primary btn-lg gap-2" onClick={handleCameraSubmit}>
-                        Analisar Agora
+                        {t("analyze.submit")}
                         <IoArrowForward />
                       </button>
                     </div>
@@ -596,14 +597,14 @@ export default function AnalyzePage() {
                       </div>
                       <div className="text-center">
                         <p className="font-bold text-lg mb-2">
-                          Arraste o arquivo aqui
+                          {t("analyze.uploadDragHere")}
                         </p>
                         <p className="text-sm text-base-content/60">
-                          ou clique para selecionar
+                          {t("analyze.uploadOrClick")}
                         </p>
                       </div>
                       <button className="btn btn-primary btn-lg">
-                        Selecionar Arquivo
+                        {t("analyze.uploadSelectFile")}
                       </button>
                     </div>
 
@@ -634,7 +635,7 @@ export default function AnalyzePage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-lg truncate">{file.name}</p>
                         <p className="text-sm text-base-content/60">
-                          {formatFileSize(file.size)} &bull; Arquivo válido
+                          {formatFileSize(file.size)} &bull; {t("analyze.uploadFileValid")}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -653,7 +654,7 @@ export default function AnalyzePage() {
                       className="btn btn-primary btn-lg w-full gap-2"
                       onClick={handleUploadSubmit}
                     >
-                      Analisar Agora
+                      {t("analyze.submit")}
                       <IoArrowForward />
                     </button>
                   </>
@@ -684,7 +685,7 @@ export default function AnalyzePage() {
 
                     {/* Instructions */}
                     <p className="text-sm text-base-content/60 text-center max-w-md">
-                      Leia o documento em voz alta ou descreva seu conteúdo.
+                      {t("analyze.audioInstruction")}
                     </p>
 
                     {/* Start/Stop button */}
@@ -694,7 +695,7 @@ export default function AnalyzePage() {
                         onClick={startRecording}
                       >
                         <IoMic className="text-xl" />
-                        Iniciar Gravação
+                        {t("analyze.audioStart")}
                       </button>
                     ) : (
                       <button
@@ -702,7 +703,7 @@ export default function AnalyzePage() {
                         onClick={stopRecording}
                       >
                         <IoStop className="text-xl" />
-                        Parar Gravação
+                        {t("analyze.audioStop")}
                       </button>
                     )}
 
@@ -719,9 +720,9 @@ export default function AnalyzePage() {
                     <div className="bg-success/10 border border-success/30 rounded-xl p-6 w-full flex items-center gap-4">
                       <IoCheckmarkCircle className="text-3xl text-success shrink-0" />
                       <div>
-                        <p className="font-bold">Gravação concluída</p>
+                        <p className="font-bold">{t("analyze.audioRecordingDone")}</p>
                         <p className="text-sm text-base-content/60">
-                          Duração: {formatTime(recordingTime)}
+                          {t("analyze.audioDuration")}: {formatTime(recordingTime)}
                         </p>
                       </div>
                     </div>
@@ -738,13 +739,13 @@ export default function AnalyzePage() {
                         onClick={clearRecording}
                       >
                         <IoTrash className="text-lg" />
-                        Gravar novamente
+                        {t("analyze.audioRecordAgain")}
                       </button>
                       <button
                         className="btn btn-primary btn-lg gap-2"
                         onClick={handleAudioSubmit}
                       >
-                        Analisar Agora
+                        {t("analyze.submit")}
                         <IoArrowForward />
                       </button>
                     </div>
@@ -755,7 +756,7 @@ export default function AnalyzePage() {
 
             {selectedMode && (
               <p className="text-center text-xs text-base-content/40 mt-6">
-                Seus documentos são processados com segurança e não são armazenados.
+                {t("analyze.disclaimer")}
               </p>
             )}
           </div>

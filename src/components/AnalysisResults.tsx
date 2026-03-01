@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import {
   IoShieldCheckmark,
   IoWarning,
@@ -11,11 +12,12 @@ import type {
   GeneralSummary,
   Gravidade,
 } from "@/types";
-import { getGravidadeBadge, getGravidadeLabel } from "@/types";
+import { getGravidadeBadge } from "@/types";
 
 // ─── Score Gauge ───
 
 export function ScoreGauge({ score }: { score: number }) {
+  const { t } = useTranslation();
   const level = score >= 70 ? "good" : score >= 40 ? "medium" : "bad";
   const color =
     level === "good"
@@ -25,10 +27,10 @@ export function ScoreGauge({ score }: { score: number }) {
       : "text-error";
   const label =
     level === "good"
-      ? "Boa Proteção"
+      ? t("analysisResults.goodProtection")
       : level === "medium"
-      ? "Atenção Necessária"
-      : "Alto Risco";
+      ? t("analysisResults.attentionNeeded")
+      : t("analysisResults.highRisk");
   const Icon =
     level === "good"
       ? IoShieldCheckmark
@@ -71,6 +73,7 @@ export function TosResult({
   summary: TosAnalysisSummary;
   protectionScore: number;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="grid gap-6">
       {/* Score */}
@@ -80,7 +83,7 @@ export function TosResult({
 
       {/* Resumo */}
       <div className="bg-base-200 rounded-2xl p-6">
-        <h3 className="font-bold text-lg mb-4">Resumo da Análise</h3>
+        <h3 className="font-bold text-lg mb-4">{t("analysisResults.summary")}</h3>
         <p className="text-base-content/70 leading-relaxed">{summary.resumo}</p>
       </div>
 
@@ -88,7 +91,7 @@ export function TosResult({
       {summary.clausulas_abusivas.length > 0 && (
         <div>
           <h3 className="font-bold text-lg mb-4">
-            Cláusulas Abusivas ({summary.clausulas_abusivas.length})
+            {t("analysisResults.abusiveClauses", { count: summary.clausulas_abusivas.length })}
           </h3>
           <div className="grid gap-3">
             {summary.clausulas_abusivas.map((clause, index) => (
@@ -103,7 +106,7 @@ export function TosResult({
                         clause.gravidade
                       )}`}
                     >
-                      {getGravidadeLabel(clause.gravidade)}
+                      {t("severity." + clause.gravidade)}
                     </span>
                     {(clause.base_legal || clause.artigo_cdc) && (
                       <span className="text-xs text-base-content/50">
@@ -126,7 +129,7 @@ export function TosResult({
         <div className="bg-success/5 border border-success/20 rounded-2xl p-6">
           <h3 className="font-bold text-lg text-success mb-4 flex items-center gap-2">
             <IoShieldCheckmark className="text-xl" />
-            Pontos Positivos
+            {t("analysisResults.positivePoints")}
           </h3>
           <ul className="space-y-2">
             {summary.pontos_positivos.map((ponto, i) => (
@@ -141,7 +144,7 @@ export function TosResult({
 
       {/* Recomendação */}
       <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6">
-        <h3 className="font-bold text-lg text-primary mb-4">Recomendação</h3>
+        <h3 className="font-bold text-lg text-primary mb-4">{t("analysisResults.recommendation")}</h3>
         <p className="text-base-content/70 leading-relaxed">
           {summary.recomendacao}
         </p>
@@ -153,10 +156,11 @@ export function TosResult({
 // ─── Scam Result ───
 
 export function ScamResult({ summary }: { summary: ScamDetectionSummary }) {
+  const { t } = useTranslation();
   const classLabel = {
-    golpe_provavel: "Golpe Provável",
-    suspeito: "Suspeito",
-    aparentemente_legitimo: "Aparentemente Legítimo",
+    golpe_provavel: t("analysisResults.scamProbable"),
+    suspeito: t("analysisResults.suspicious"),
+    aparentemente_legitimo: t("analysisResults.apparentlyLegit"),
   }[summary.classificacao];
 
   const classBadge = {
@@ -173,13 +177,13 @@ export function ScamResult({ summary }: { summary: ScamDetectionSummary }) {
           {classLabel}
         </span>
         <p className="text-sm text-base-content/50">
-          Confiança: {summary.confianca}%
+          {t("analysisResults.confidence", { value: summary.confianca })}
         </p>
       </div>
 
       {/* Explicação */}
       <div className="bg-base-200 rounded-2xl p-6">
-        <h3 className="font-bold text-lg mb-4">Explicação</h3>
+        <h3 className="font-bold text-lg mb-4">{t("analysisResults.explanation")}</h3>
         <p className="text-base-content/70 leading-relaxed">
           {summary.explicacao}
         </p>
@@ -190,7 +194,7 @@ export function ScamResult({ summary }: { summary: ScamDetectionSummary }) {
         <div className="bg-error/5 border border-error/20 rounded-2xl p-6">
           <h3 className="font-bold text-lg text-error mb-4 flex items-center gap-2">
             <IoAlert className="text-xl" />
-            Sinais de Alerta
+            {t("analysisResults.warningSignals")}
           </h3>
           <ul className="space-y-2">
             {summary.sinais_alerta.map((sinal, i) => (
@@ -206,7 +210,7 @@ export function ScamResult({ summary }: { summary: ScamDetectionSummary }) {
       {/* Ação recomendada */}
       <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6">
         <h3 className="font-bold text-lg text-primary mb-4">
-          Ação Recomendada
+          {t("analysisResults.recommendedAction")}
         </h3>
         <p className="text-base-content/70 leading-relaxed">
           {summary.acao_recomendada}
@@ -218,7 +222,7 @@ export function ScamResult({ summary }: { summary: ScamDetectionSummary }) {
         <div className="bg-warning/5 border border-warning/20 rounded-2xl p-6">
           <h3 className="font-bold text-lg text-warning mb-4 flex items-center gap-2">
             <IoWarning className="text-xl" />
-            Onde Denunciar
+            {t("analysisResults.whereToReport")}
           </h3>
           <div className="grid gap-4">
             {summary.onde_denunciar.map((d, i) => (
@@ -238,11 +242,12 @@ export function ScamResult({ summary }: { summary: ScamDetectionSummary }) {
 // ─── General Result ───
 
 export function GeneralResult({ summary }: { summary: GeneralSummary }) {
+  const { t } = useTranslation();
   return (
     <div className="grid gap-6">
       {/* Resumo executivo */}
       <div className="bg-base-200 rounded-2xl p-6">
-        <h3 className="font-bold text-lg mb-4">Resumo Executivo</h3>
+        <h3 className="font-bold text-lg mb-4">{t("analysisResults.executiveSummary")}</h3>
         <p className="text-base-content/70 leading-relaxed">
           {summary.resumo_executivo}
         </p>
@@ -253,7 +258,7 @@ export function GeneralResult({ summary }: { summary: GeneralSummary }) {
         <div className="bg-error/5 border border-error/20 rounded-2xl p-6">
           <h3 className="font-bold text-lg text-error mb-4 flex items-center gap-2">
             <IoAlert className="text-xl" />
-            Pontos Críticos
+            {t("analysisResults.criticalPoints")}
           </h3>
           <div className="grid gap-3">
             {summary.pontos_criticos.map((p, i) => (
@@ -264,7 +269,7 @@ export function GeneralResult({ summary }: { summary: GeneralSummary }) {
                       p.urgencia as Gravidade
                     )}`}
                   >
-                    {getGravidadeLabel(p.urgencia as Gravidade)}
+                    {t("severity." + p.urgencia)}
                   </span>
                 </div>
                 <p className="font-bold text-sm">{p.item}</p>
@@ -281,7 +286,7 @@ export function GeneralResult({ summary }: { summary: GeneralSummary }) {
       {summary.acoes_recomendadas.length > 0 && (
         <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6">
           <h3 className="font-bold text-lg text-primary mb-4">
-            Ações Recomendadas
+            {t("analysisResults.recommendedActions")}
           </h3>
           <div className="grid gap-3">
             {summary.acoes_recomendadas.map((a, i) => (
@@ -290,7 +295,7 @@ export function GeneralResult({ summary }: { summary: GeneralSummary }) {
                   {i + 1}. {a.acao}
                 </p>
                 {a.prazo && (
-                  <p className="text-xs text-warning mt-1">Prazo: {a.prazo}</p>
+                  <p className="text-xs text-warning mt-1">{t("analysisResults.deadline", { value: a.prazo })}</p>
                 )}
                 <p className="text-xs text-base-content/60 mt-1">
                   {a.como_fazer}
@@ -306,14 +311,14 @@ export function GeneralResult({ summary }: { summary: GeneralSummary }) {
         <div className="bg-warning/5 border border-warning/20 rounded-2xl p-6">
           <h3 className="font-bold text-lg text-warning mb-4 flex items-center gap-2">
             <IoWarning className="text-xl" />
-            Prazos Importantes
+            {t("analysisResults.importantDeadlines")}
           </h3>
           <div className="grid gap-3">
             {summary.prazos.map((p, i) => (
               <div key={i} className="bg-base-100 rounded-xl p-4">
                 <p className="font-bold text-sm">{p.descricao}</p>
                 <p className="text-xs text-error mt-1">
-                  Limite: {p.data_limite}
+                  {t("analysisResults.deadlineLimit", { date: p.data_limite })}
                 </p>
                 <p className="text-xs text-base-content/60 mt-1">
                   {p.consequencia}
@@ -327,7 +332,7 @@ export function GeneralResult({ summary }: { summary: GeneralSummary }) {
       {/* Base legal */}
       {summary.base_legal.length > 0 && (
         <div className="bg-base-200 rounded-2xl p-6">
-          <h3 className="font-bold text-lg mb-4">Base Legal</h3>
+          <h3 className="font-bold text-lg mb-4">{t("analysisResults.legalBasis")}</h3>
           <div className="grid gap-2">
             {summary.base_legal.map((b, i) => (
               <div key={i} className="flex gap-3 text-sm">

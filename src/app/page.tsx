@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { useApp } from "@/contexts/AppContext";
 import {
   IoLink,
@@ -26,6 +27,7 @@ import Navbar from "@/components/Navbar";
 export default function Home() {
   const router = useRouter();
   const { reset } = useApp();
+  const { t } = useTranslation();
 
   const handleSelect = () => {
     reset();
@@ -35,33 +37,33 @@ export default function Home() {
   const profiles = [
     {
       icon: <IoPerson className="w-5 h-5" />,
-      title: "Idoso (65+)",
-      pain: "Não entende carta do INSS, receita médica, contrato do banco",
-      solution: "Áudio explicativo + texto grande + linguagem fundamental",
+      title: t("landing.profileElderly"),
+      pain: t("landing.profileElderlyPain"),
+      solution: t("landing.profileElderlySolution"),
     },
     {
       icon: <IoBag className="w-5 h-5" />,
-      title: "Trabalhador informal",
-      pain: "Não sabe interpretar CTPS digital, cálculo de FGTS, contrato de aluguel",
-      solution: "Resumo direto do que fazer + geração de documento",
+      title: t("landing.profileWorker"),
+      pain: t("landing.profileWorkerPain"),
+      solution: t("landing.profileWorkerSolution"),
     },
     {
       icon: <IoPencil className="w-5 h-5" />,
-      title: "Estudante/Jovem",
-      pain: "Não lê TOS dos apps que usa, não entende edital de vestibular",
-      solution: "Score de abusividade + card compartilhável",
+      title: t("landing.profileStudent"),
+      pain: t("landing.profileStudentPain"),
+      solution: t("landing.profileStudentSolution"),
     },
     {
       icon: <IoBuild className="w-5 h-5" />,
-      title: "Empreendedor",
-      pain: "Não decifra licitação, contrato social, certidões",
-      solution: "Análise estruturada + pontos de atenção + próximos passos",
+      title: t("landing.profileEntrepreneur"),
+      pain: t("landing.profileEntrepreneurPain"),
+      solution: t("landing.profileEntrepreneurSolution"),
     },
     {
       icon: <IoPeople className="w-5 h-5" />,
-      title: "Qualquer cidadão",
-      pain: "Recebe intimação judicial e não sabe o que fazer",
-      solution: "Tradução + explicação dos prazos + ações recomendadas",
+      title: t("landing.profileCitizen"),
+      pain: t("landing.profileCitizenPain"),
+      solution: t("landing.profileCitizenSolution"),
     },
   ];
 
@@ -71,8 +73,8 @@ export default function Home() {
         variant="transparent"
         showNav
         navLinks={[
-          { label: "Como Funciona", href: "#how-it-works" },
-          { label: "Pra quem é", href: "#profiles" },
+          { label: t("navbar.howItWorks"), href: "#how-it-works" },
+          { label: t("navbar.forWhom"), href: "#profiles" },
         ]}
       />
 
@@ -94,28 +96,18 @@ export default function Home() {
               className="text-secondary bg-white/10 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 border border-primary-foreground/10 mb-8"
             >
               <IoShieldCheckmark />
-              IA que protege seus direitos
+              {t("landing.heroBadge")}
             </motion.div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-6">
-              Cláusula{" "}
-              <span className="relative inline-block">
-                Oculta
-                <span className="absolute left-0 -bottom-1 h-1 w-full rounded-full bg-secondary"></span>
-              </span>
+              {t("common.brandName")}
             </h1>
             <h5 className="text-1xl md:text-2xl lg:text-3xl font-extrabold text-white leading-tight mb-6">
-              Entenda seus{" "}
-              <span className="bg-gradient-to-r from-secondary to-secondary/80 bg-clip-text text-transparent">
-                contratos
-              </span>{" "}
-              em linguagem simples
+              {t("landing.heroSubtitle")}
             </h5>
 
             <p className="text-lg md:text-xl text-white/75 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Transformamos documentos jurídicos e oficiais em linguagem que
-              qualquer pessoa entende. Contratos, termos, intimações — sem
-              surpresas.
+              {t("landing.heroBody")}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -123,14 +115,14 @@ export default function Home() {
                 className="btn btn-secondary btn-lg gap-2 rounded-2xl"
                 onClick={handleSelect}
               >
-                Analisar Documento
+                {t("landing.heroCta")}
                 <IoArrowForward />
               </button>
               <a
                 href="#how-it-works"
                 className="btn btn-outline btn-lg rounded-2xl"
               >
-                Como Funciona?
+                {t("landing.heroSecondary")}
               </a>
             </div>
           </div>
@@ -140,25 +132,25 @@ export default function Home() {
                 <div className="text-4xl md:text-5xl font-bold mb-2 text-secondary">
                   60M+
                 </div>
-                <p className="text-sm text-white/60">BENEFICIÁRIOS INSS</p>
+                <p className="text-sm text-white/60">{t("landing.statBeneficiarios")}</p>
               </div>
               <div className="text-center">
                 <div className="text-4xl md:text-5xl font-bold mb-2 text-secondary">
                   150M+
                 </div>
-                <p className="text-sm text-white/60">USUÁRIOS SUS</p>
+                <p className="text-sm text-white/60">{t("landing.statSus")}</p>
               </div>
               <div className="text-center">
                 <div className="text-4xl md:text-5xl font-bold mb-2 text-secondary">
                   80M+
                 </div>
-                <p className="text-sm text-white/60">PROCESSOS ATIVOS</p>
+                <p className="text-sm text-white/60">{t("landing.statProcessos")}</p>
               </div>
               <div className="text-center">
                 <div className="text-4xl md:text-5xl font-bold mb-2 text-secondary">
                   156M+
                 </div>
-                <p className="text-sm text-white/60">USUÁRIOS INTERNET</p>
+                <p className="text-sm text-white/60">{t("landing.statInternet")}</p>
               </div>
             </div>
           </div>
@@ -192,7 +184,7 @@ export default function Home() {
                   }}
                 />
               </div>
-              <p className="text-xs text-white/50 font-medium">Rolar</p>
+              <p className="text-xs text-white/50 font-medium">{t("landing.scroll")}</p>
             </motion.a>
           </motion.div>
         </div>
@@ -208,16 +200,15 @@ export default function Home() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
-              Como Funciona
+              {t("landing.howTitle")}
             </h2>
             <p className="text-base-content/60 max-w-xl mx-auto">
-              Em apenas quatro passos simples, tenha total clareza sobre
-              qualquer documento.
+              {t("landing.howSubtitle")}
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-4 gap-8">
-            {/* PASSO 1 - Envie o documento */}
+            {/* PASSO 1 */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -234,19 +225,18 @@ export default function Home() {
               </div>
               <div className="mb-2">
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                  PASSO 1
+                  {t("landing.step1Label")}
                 </span>
               </div>
               <h3 className="text-xl font-bold mb-3 text-gray-800">
-                Envie o documento
+                {t("landing.step1Title")}
               </h3>
               <p className="text-sm text-gray-600 max-w-xs mx-auto leading-relaxed">
-                Cole uma URL, tire uma foto ou faça upload do arquivo (PDF,
-                imagem, etc.)
+                {t("landing.step1Desc")}
               </p>
             </motion.div>
 
-            {/* PASSO 2 - IA analisa o conteúdo */}
+            {/* PASSO 2 */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -261,19 +251,18 @@ export default function Home() {
               </div>
               <div className="mb-2">
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                  PASSO 2
+                  {t("landing.step2Label")}
                 </span>
               </div>
               <h3 className="text-xl font-bold mb-3 text-gray-800">
-                IA analisa o conteúdo
+                {t("landing.step2Title")}
               </h3>
               <p className="text-sm text-gray-600 max-w-xs mx-auto leading-relaxed">
-                Nossos agentes de IA identificam cláusulas, calculam riscos e
-                traduzem o juridiquês.
+                {t("landing.step2Desc")}
               </p>
             </motion.div>
 
-            {/* PASSO 3 - Veja o resultado */}
+            {/* PASSO 3 */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -288,19 +277,18 @@ export default function Home() {
               </div>
               <div className="mb-2">
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                  PASSO 3
+                  {t("landing.step3Label")}
                 </span>
               </div>
               <h3 className="text-xl font-bold mb-3 text-gray-800">
-                Veja o resultado
+                {t("landing.step3Title")}
               </h3>
               <p className="text-sm text-gray-600 max-w-xs mx-auto leading-relaxed">
-                Score de risco, explicação em linguagem simples e recomendações
-                de ação.
+                {t("landing.step3Desc")}
               </p>
             </motion.div>
 
-            {/* PASSO 4 - Compartilhe ou salve */}
+            {/* PASSO 4 */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -321,14 +309,14 @@ export default function Home() {
               </div>
               <div className="mb-2">
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                  PASSO 4
+                  {t("landing.step4Label")}
                 </span>
               </div>
               <h3 className="text-xl font-bold mb-3 text-gray-800">
-                Compartilhe ou salve
+                {t("landing.step4Title")}
               </h3>
               <p className="text-sm text-gray-600 max-w-xs mx-auto leading-relaxed">
-                Envie por WhatsApp, e-mail ou salve para consultar depois.
+                {t("landing.step4Desc")}
               </p>
             </motion.div>
           </div>
@@ -345,13 +333,13 @@ export default function Home() {
             className="text-center mb-16"
           >
             <p className="text-base-content/60 max-w-xl mx-auto text-secondary">
-              PÚBLICO-ALVO
+              {t("landing.audienceLabel")}
             </p>
             <h2 className="text-3xl md:text-4xl font-extrabold mb-4 ">
-              Pra quem é?
+              {t("landing.audienceTitle")}
             </h2>
             <p className="text-base-content/60 max-w-xl mx-auto">
-              Linguagem acessível para todos os brasileiros.
+              {t("landing.audienceSubtitle")}
             </p>
           </motion.div>
 
@@ -373,12 +361,12 @@ export default function Home() {
                 </h3>
                 <div className="space-y-2">
                   <p className="text-sm text-destructive/80 font-body">
-                    <span className="font-semibold text-red-500">Dor:</span>{" "}
+                    <span className="font-semibold text-red-500">{t("landing.pain")}</span>{" "}
                     {p.pain}
                   </p>
                   <p className="text-sm  font-body">
                     <span className="font-semibold text-green-500">
-                      Solução:
+                      {t("landing.solution")}
                     </span>{" "}
                     {p.solution}
                   </p>
@@ -399,11 +387,10 @@ export default function Home() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
-              Tudo que você precisa para entender seus documentos
+              {t("landing.featuresTitle")}
             </h2>
             <p className="text-base-content/60 max-w-2xl mx-auto">
-              Nossa IA analisa cada detalhe do seu documento, simplifica a
-              linguagem e identifica o que realmente importa para você.
+              {t("landing.featuresSubtitle")}
             </p>
           </motion.div>
 
@@ -420,10 +407,9 @@ export default function Home() {
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
                   <IoFlash className="text-2xl text-primary" />
                 </div>
-                <h3 className="card-title text-lg">Linguagem Simples</h3>
+                <h3 className="card-title text-lg">{t("landing.featureSimple")}</h3>
                 <p className="text-sm text-base-content/60">
-                  Traduz juridiquês complexo em texto claro e fácil de entender
-                  para qualquer pessoa.
+                  {t("landing.featureSimpleDesc")}
                 </p>
               </div>
             </motion.div>
@@ -441,11 +427,10 @@ export default function Home() {
                   <IoShieldCheckmark className="text-2xl text-error" />
                 </div>
                 <h3 className="card-title text-lg">
-                  Detecta Cláusulas Abusivas
+                  {t("landing.featureAbusive")}
                 </h3>
                 <p className="text-sm text-base-content/60">
-                  Identifica automaticamente termos que violam o Código de
-                  Defesa do Consumidor.
+                  {t("landing.featureAbusiveDesc")}
                 </p>
               </div>
             </motion.div>
@@ -462,10 +447,9 @@ export default function Home() {
                 <div className="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center mb-2">
                   <IoDocumentText className="text-2xl text-warning" />
                 </div>
-                <h3 className="card-title text-lg">Referências Legais</h3>
+                <h3 className="card-title text-lg">{t("landing.featureLegal")}</h3>
                 <p className="text-sm text-base-content/60">
-                  Cada cláusula vem com referência ao artigo do CDC ou LGPD
-                  correspondente.
+                  {t("landing.featureLegalDesc")}
                 </p>
               </div>
             </motion.div>
@@ -482,10 +466,9 @@ export default function Home() {
                 <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center mb-2">
                   <IoScan className="text-2xl text-secondary" />
                 </div>
-                <h3 className="card-title text-lg">OCR Inteligente</h3>
+                <h3 className="card-title text-lg">{t("landing.featureOcr")}</h3>
                 <p className="text-sm text-base-content/60">
-                  Extrai texto de fotos e imagens de documentos com alta
-                  precisão.
+                  {t("landing.featureOcrDesc")}
                 </p>
               </div>
             </motion.div>
@@ -502,10 +485,9 @@ export default function Home() {
                 <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center mb-2">
                   <IoLockClosed className="text-2xl text-success" />
                 </div>
-                <h3 className="card-title text-lg">Privacidade Total</h3>
+                <h3 className="card-title text-lg">{t("landing.featurePrivacy")}</h3>
                 <p className="text-sm text-base-content/60">
-                  Seus documentos são processados com segurança e nunca são
-                  armazenados.
+                  {t("landing.featurePrivacyDesc")}
                 </p>
               </div>
             </motion.div>
@@ -522,10 +504,9 @@ export default function Home() {
                 <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-2">
                   <IoEye className="text-2xl text-accent" />
                 </div>
-                <h3 className="card-title text-lg">Score de Risco</h3>
+                <h3 className="card-title text-lg">{t("landing.featureScore")}</h3>
                 <p className="text-sm text-base-content/60">
-                  Avaliação visual de 0 a 100 mostrando o nível geral de risco
-                  do documento.
+                  {t("landing.featureScoreDesc")}
                 </p>
               </div>
             </motion.div>
@@ -544,41 +525,41 @@ export default function Home() {
                 <div className="w-3 h-3 rounded-full bg-warning" />
                 <div className="w-3 h-3 rounded-full bg-success" />
                 <span className="text-xs text-base-content/40 ml-2">
-                  análise em andamento...
+                  {t("landing.mockupStatus")}
                 </span>
               </div>
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-3 bg-error/5 border border-error/20 rounded-lg">
-                  <span className="badge badge-error badge-sm">Alto</span>
+                  <span className="badge badge-error badge-sm">{t("landing.mockupHigh")}</span>
                   <span className="text-sm font-medium flex-1">
-                    Multa rescisória de 40%
+                    {t("landing.mockupClause1")}
                   </span>
                   <span className="text-xs text-error hidden sm:inline">
                     Art. 51 CDC
                   </span>
                 </div>
                 <div className="flex items-center gap-3 p-3 bg-error/5 border border-error/20 rounded-lg">
-                  <span className="badge badge-error badge-sm">Alto</span>
+                  <span className="badge badge-error badge-sm">{t("landing.mockupHigh")}</span>
                   <span className="text-sm font-medium flex-1">
-                    Dados compartilhados sem consentimento
+                    {t("landing.mockupClause2")}
                   </span>
                   <span className="text-xs text-error hidden sm:inline">
                     LGPD
                   </span>
                 </div>
                 <div className="flex items-center gap-3 p-3 bg-warning/5 border border-warning/20 rounded-lg">
-                  <span className="badge badge-warning badge-sm">Médio</span>
+                  <span className="badge badge-warning badge-sm">{t("landing.mockupMedium")}</span>
                   <span className="text-sm font-medium flex-1">
-                    Reajuste unilateral de preços
+                    {t("landing.mockupClause3")}
                   </span>
                   <span className="text-xs text-warning hidden sm:inline">
                     Art. 51 CDC
                   </span>
                 </div>
                 <div className="flex items-center gap-3 p-3 bg-success/5 border border-success/20 rounded-lg">
-                  <span className="badge badge-success badge-sm">Baixo</span>
+                  <span className="badge badge-success badge-sm">{t("landing.mockupLow")}</span>
                   <span className="text-sm font-medium flex-1">
-                    Foro de resolução
+                    {t("landing.mockupClause4")}
                   </span>
                   <span className="text-xs text-success hidden sm:inline">
                     Art. 101 CDC
@@ -603,11 +584,10 @@ export default function Home() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
-              Proteção que faz diferença
+              {t("landing.statsTitle")}
             </h2>
             <p className="text-white/70 max-w-xl mx-auto">
-              Baseado no Código de Defesa do Consumidor e na LGPD, garantindo
-              que seus direitos sejam respeitados.
+              {t("landing.statsSubtitle")}
             </p>
           </motion.div>
 
@@ -623,7 +603,7 @@ export default function Home() {
                 50+
               </div>
               <p className="text-sm text-white/70">
-                Artigos do CDC verificados
+                {t("landing.statCdc")}
               </p>
             </motion.div>
             <motion.div
@@ -636,7 +616,7 @@ export default function Home() {
               <div className="text-4xl md:text-5xl font-extrabold mb-2">
                 100%
               </div>
-              <p className="text-sm text-white/70">Privacidade dos dados</p>
+              <p className="text-sm text-white/70">{t("landing.statPrivacy")}</p>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -646,7 +626,7 @@ export default function Home() {
               className="text-center"
             >
               <div className="text-4xl md:text-5xl font-extrabold mb-2">3</div>
-              <p className="text-sm text-white/70">Formas de envio</p>
+              <p className="text-sm text-white/70">{t("landing.statMethods")}</p>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -658,7 +638,7 @@ export default function Home() {
               <div className="text-4xl md:text-5xl font-extrabold mb-2">
                 &lt;30s
               </div>
-              <p className="text-sm text-white/70">Tempo de análise</p>
+              <p className="text-sm text-white/70">{t("landing.statTime")}</p>
             </motion.div>
           </div>
         </div>
@@ -674,11 +654,10 @@ export default function Home() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
-              Comece a analisar agora
+              {t("landing.ctaTitle")}
             </h2>
             <p className="text-base-content/60 max-w-xl mx-auto">
-              Escolha como deseja enviar seu documento e receba uma análise
-              completa em segundos.
+              {t("landing.ctaSubtitle")}
             </p>
           </motion.div>
 
@@ -696,13 +675,13 @@ export default function Home() {
                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-2">
                   <IoLink className="text-3xl text-primary" />
                 </div>
-                <h3 className="card-title text-lg">Colar URL</h3>
+                <h3 className="card-title text-lg">{t("landing.ctaUrl")}</h3>
                 <p className="text-sm text-base-content/60">
-                  Cole o link de um documento, termo de uso ou contrato online.
+                  {t("landing.ctaUrlDesc")}
                 </p>
                 <div className="card-actions mt-4">
                   <span className="btn btn-primary btn-sm gap-1">
-                    Começar <IoArrowForward />
+                    {t("landing.ctaStart")} <IoArrowForward />
                   </span>
                 </div>
               </div>
@@ -721,13 +700,13 @@ export default function Home() {
                 <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mb-2">
                   <IoCamera className="text-3xl text-secondary" />
                 </div>
-                <h3 className="card-title text-lg">Câmera / Foto</h3>
+                <h3 className="card-title text-lg">{t("landing.ctaCamera")}</h3>
                 <p className="text-sm text-base-content/60">
-                  Tire uma foto do documento ou escolha uma imagem da galeria.
+                  {t("landing.ctaCameraDesc")}
                 </p>
                 <div className="card-actions mt-4">
                   <span className="btn btn-secondary btn-sm gap-1">
-                    Começar <IoArrowForward />
+                    {t("landing.ctaStart")} <IoArrowForward />
                   </span>
                 </div>
               </div>
@@ -746,13 +725,13 @@ export default function Home() {
                 <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mb-2">
                   <IoDocument className="text-3xl text-accent" />
                 </div>
-                <h3 className="card-title text-lg">Enviar Arquivo</h3>
+                <h3 className="card-title text-lg">{t("landing.ctaFile")}</h3>
                 <p className="text-sm text-base-content/60">
-                  Upload de PDF, DOC, DOCX ou imagem do documento (até 10MB).
+                  {t("landing.ctaFileDesc")}
                 </p>
                 <div className="card-actions mt-4">
                   <span className="btn btn-accent btn-sm gap-1">
-                    Começar <IoArrowForward />
+                    {t("landing.ctaStart")} <IoArrowForward />
                   </span>
                 </div>
               </div>
@@ -760,8 +739,7 @@ export default function Home() {
           </div>
 
           <p className="text-center text-xs text-base-content/40 mt-8">
-            Seus documentos são processados com segurança e não são armazenados
-            em nossos servidores.
+            {t("landing.ctaDisclaimer")}
           </p>
         </div>
       </section>

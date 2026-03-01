@@ -43,6 +43,8 @@ export interface ApiProfile {
   analyses_this_month: number;
   month_reset_at: string;
   created_at: string;
+  country: string | null;
+  language: string | null;
 }
 
 export interface ApiSession {

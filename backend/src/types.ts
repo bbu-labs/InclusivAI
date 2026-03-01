@@ -77,5 +77,11 @@ export type AnalysisType = (typeof ANALYSIS_TYPES)[number];
 export const PREFERRED_OUTPUTS = ["text", "audio", "both"] as const;
 export type PreferredOutput = (typeof PREFERRED_OUTPUTS)[number];
 
+export const SUPPORTED_COUNTRIES = ["BR", "US", "FR"] as const;
+export type SupportedCountry = (typeof SUPPORTED_COUNTRIES)[number];
+
+export const SUPPORTED_LANGUAGES = ["pt-BR", "en-US", "fr-FR"] as const;
+export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+
 // App type shorthand
 export type AppEnv = { Bindings: Bindings; Variables: Variables };

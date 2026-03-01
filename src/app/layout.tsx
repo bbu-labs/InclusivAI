@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ExperienceProvider } from "@/contexts/ExperienceContext";
 import { AppProvider } from "@/contexts/AppContext";
+import I18nProvider from "@/components/I18nProvider";
 import Footer from "@/components/Footer";
 import OnboardingGuard from "@/components/OnboardingGuard";
 import { ToastProvider } from "@/components/Toast";
@@ -27,18 +29,22 @@ export default function RootLayout({
         >
           Pular para conteúdo
         </a>
-        <AuthProvider>
-          <ExperienceProvider>
-            <AppProvider>
-              <ToastProvider>
-                <OnboardingGuard>
-                  <main id="main-content">{children}</main>
-                  <Footer />
-                </OnboardingGuard>
-              </ToastProvider>
-            </AppProvider>
-          </ExperienceProvider>
-        </AuthProvider>
+        <I18nProvider>
+          <AuthProvider>
+            <LanguageProvider>
+              <ExperienceProvider>
+                <AppProvider>
+                  <ToastProvider>
+                    <OnboardingGuard>
+                      <main id="main-content">{children}</main>
+                      <Footer />
+                    </OnboardingGuard>
+                  </ToastProvider>
+                </AppProvider>
+              </ExperienceProvider>
+            </LanguageProvider>
+          </AuthProvider>
+        </I18nProvider>
       </body>
     </html>
   );

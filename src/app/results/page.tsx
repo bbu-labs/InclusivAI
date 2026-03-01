@@ -27,8 +27,7 @@ import type {
 import { computeProtectionScore } from "@/types";
 import Navbar from "@/components/Navbar";
 import { useToast } from "@/components/Toast";
-
-const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
+import { useTranslation } from "react-i18next";
 
 // ─── Main Page ───
 
@@ -37,6 +36,8 @@ export default function ResultsPage() {
   const { state, setAnalysisDisplay } = useApp();
   const { profile: xp } = useExperience();
   const { showToast } = useToast();
+  const { t } = useTranslation();
+  const STEPS = [t("analyze.stepInput"), t("analyze.stepProcessing"), t("analyze.stepConfirmation"), t("analyze.stepResult")];
   const [isLoading, setIsLoading] = useState(true);
   const [display, setDisplay] = useState<AnalysisDisplay | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -81,12 +82,12 @@ export default function ResultsPage() {
       } catch (err) {
         if (err instanceof ApiError) {
           if (err.status === 429) {
-            setError("Limite de análises atingido este mês.");
+            setError(t("results.rateLimitError"));
           } else {
             setError(err.message);
           }
         } else {
-          setError("Erro ao analisar documento. Tente novamente.");
+          setError(t("results.analysisError"));
         }
         setIsLoading(false);
       }
@@ -100,7 +101,7 @@ export default function ResultsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-base-100">
-        <Navbar statusText="Analisando..." />
+        <Navbar statusText={t("results.analyzing")} />
 
         <div className="pt-16">
           <div className="max-w-4xl mx-auto px-6 py-8">
@@ -110,14 +111,13 @@ export default function ResultsPage() {
               <span className="loading loading-dots loading-lg text-primary mb-6" />
               <div className="text-center">
                 <h2 className="text-2xl md:text-3xl font-extrabold mb-3">
-                  Análise profunda em andamento
+                  {t("results.loadingTitle")}
                 </h2>
                 <p className="text-base-content/60 max-w-lg mx-auto">
-                  A IA está identificando cláusulas, verificando conformidade e
-                  gerando o resultado...
+                  {t("results.loadingDesc")}
                 </p>
                 <p className="text-xs text-base-content/40 mt-4">
-                  Isso pode levar de 10 a 30 segundos
+                  {t("results.loadingTime")}
                 </p>
               </div>
               <div className="w-full max-w-md mt-8">
@@ -134,13 +134,13 @@ export default function ResultsPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-base-100">
-        <Navbar backHref="/analyze" backLabel="Nova Análise" />
+        <Navbar backHref="/analyze" backLabel={t("results.newAnalysis")} />
 
         <div className="pt-16">
           <div className="max-w-4xl mx-auto px-6 py-8">
             <div className="mt-8 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-96">
               <IoAlert className="text-6xl text-error mb-4" />
-              <h2 className="text-2xl font-extrabold mb-3">Erro na Análise</h2>
+              <h2 className="text-2xl font-extrabold mb-3">{t("results.errorTitle")}</h2>
               <p className="text-base-content/60 text-center mb-6">{error}</p>
               <div className="flex gap-4">
                 <button
@@ -148,7 +148,7 @@ export default function ResultsPage() {
                   onClick={() => router.push("/analyze")}
                 >
                   <IoHome className="text-lg" />
-                  Nova Análise
+                  {t("results.newAnalysis")}
                 </button>
                 <button
                   className="btn btn-primary gap-2"
@@ -160,7 +160,7 @@ export default function ResultsPage() {
                   }}
                 >
                   <IoRefresh className="text-lg" />
-                  Tentar Novamente
+                  {t("results.retry")}
                 </button>
               </div>
             </div>
@@ -176,8 +176,8 @@ export default function ResultsPage() {
     <div className="min-h-screen bg-base-100">
       <Navbar
         backHref="/analyses"
-        backLabel="Minhas Análises"
-        pageAction={<Link href="/analyze" className="btn btn-primary btn-sm">Nova Análise</Link>}
+        backLabel={t("results.myAnalyses")}
+        pageAction={<Link href="/analyze" className="btn btn-primary btn-sm">{t("results.newAnalysis")}</Link>}
       />
 
       {/* Main Content */}
@@ -189,9 +189,9 @@ export default function ResultsPage() {
             {/* Document title */}
             <div className="text-center mb-8">
               <h2 className="text-2xl md:text-3xl font-extrabold mb-2">
-                {state.document?.title || "Resultado da Análise"}
+                {state.document?.title || t("results.fallbackTitle")}
               </h2>
-              <p className="text-base-content/50">Análise concluída</p>
+              <p className="text-base-content/50">{t("results.completed")}</p>
             </div>
 
             {xp.showGuidanceText && (
@@ -199,7 +199,7 @@ export default function ResultsPage() {
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Dica: Role para ver todos os detalhes. Use o botão de áudio para ouvir.</span>
+                <span>{t("results.seniorTip")}</span>
               </div>
             )}
 
@@ -244,19 +244,19 @@ export default function ResultsPage() {
                     const { hash } = await apiGetShareHash(display.analysisId);
                     const url = `${window.location.origin}/share/${display.analysisId}?hash=${hash}`;
                     if (navigator.share) {
-                      await navigator.share({ title: "Análise - Cláusula Oculta", url });
+                      await navigator.share({ title: t("results.shareTitle"), url });
                     } else {
                       await navigator.clipboard.writeText(url);
-                      showToast("Link copiado!", "success");
+                      showToast(t("results.linkCopied"), "success");
                     }
                   } catch {
-                    showToast("Erro ao compartilhar", "error");
+                    showToast(t("results.shareError"), "error");
                   }
                 }}
-                aria-label="Compartilhar link da análise"
+                aria-label={t("results.shareLink")}
               >
                 <IoShareSocial />
-                Compartilhar Link
+                {t("results.shareLink")}
               </button>
               <button
                 className="btn btn-outline flex-1 gap-2"
@@ -267,26 +267,26 @@ export default function ResultsPage() {
                     const { hash } = await apiGetShareHash(display.analysisId);
                     await fetchAndShareImage(display.analysisId, hash);
                   } catch {
-                    showToast("Erro ao gerar imagem", "error");
+                    showToast(t("results.imageError"), "error");
                   } finally {
                     setSharingImage(false);
                   }
                 }}
-                aria-label="Compartilhar imagem da análise"
+                aria-label={t("results.shareImage")}
               >
                 {sharingImage ? (
                   <span className="loading loading-spinner loading-sm" />
                 ) : (
                   <IoImage />
                 )}
-                Compartilhar Imagem
+                {t("results.shareImage")}
               </button>
               <button
                 className="btn btn-primary flex-1 gap-2"
                 onClick={() => router.push("/analyze")}
               >
                 <IoHome />
-                Analisar outro
+                {t("results.analyzeAnother")}
               </button>
             </div>
           </div>

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MistralClient } from "../services/mistral";
-import type { AnalysisType, SimplificationLevel, SourceType } from "../types";
+import type { AnalysisType, SimplificationLevel, SourceType, SupportedCountry } from "../types";
 import { readFromText, readFromImage, readFromPdf, type StructuredDocument } from "./reader";
 import { simplifyDocument, type SimplifierResult } from "./simplifier";
 import { triageDocument } from "./legal-triage";
@@ -20,13 +20,14 @@ function estimateCost(model: string, tokensIn: number, tokensOut: number): numbe
 
 export type PipelineInput = {
   sourceType: SourceType;
-  content: string; // raw text for text_input; ignored for file uploads
-  filePath?: string; // Supabase storage path for pdf_upload/image_upload
-  mimeType?: string; // for image uploads
+  content: string;
+  filePath?: string;
+  mimeType?: string;
   userId: string;
   documentId: string;
   simplificationLevel: SimplificationLevel;
   analysisType: AnalysisType;
+  country: SupportedCountry;
 };
 
 export type PipelineResult = {
@@ -47,13 +48,13 @@ export async function analyzeDocument(
   let totalTokensIn = 0;
   let totalTokensOut = 0;
   let totalCost = 0;
+  const country = input.country;
 
   // Step 1: Reader Agent → structured_data
   let structuredText: string;
   let structuredDoc: StructuredDocument | null = null;
 
   if (input.sourceType === "pdf_upload" && input.filePath) {
-    // Download PDF from Supabase Storage → extract text → Reader
     const { data: fileData, error: dlError } = await supabaseAdmin.storage
       .from("uploads")
       .download(input.filePath);
@@ -61,7 +62,7 @@ export async function analyzeDocument(
       throw new Error("Failed to download PDF from storage");
     }
     const pdfBytes = await fileData.arrayBuffer();
-    const readerResult = await readFromPdf(pdfBytes, mistralClient);
+    const readerResult = await readFromPdf(pdfBytes, mistralClient, country);
     if (!readerResult.success || !readerResult.data) {
       throw new Error(`Reader agent failed: ${readerResult.error}`);
     }
@@ -81,7 +82,6 @@ export async function analyzeDocument(
       })
       .eq("id", input.documentId);
   } else if (input.sourceType === "image_upload" && input.filePath) {
-    // Download image from Supabase Storage → base64 → Pixtral OCR
     const { data: fileData, error: dlError } = await supabaseAdmin.storage
       .from("uploads")
       .download(input.filePath);
@@ -94,7 +94,7 @@ export async function analyzeDocument(
     );
     const mimeType = input.mimeType || "image/jpeg";
 
-    const readerResult = await readFromImage(base64, mimeType, mistralClient);
+    const readerResult = await readFromImage(base64, mimeType, mistralClient, country);
     if (!readerResult.success || !readerResult.data) {
       throw new Error(`Reader agent failed: ${readerResult.error}`);
     }
@@ -114,8 +114,7 @@ export async function analyzeDocument(
       })
       .eq("id", input.documentId);
   } else {
-    // text_input — raw text already available
-    const readerResult = await readFromText(input.content, mistralClient);
+    const readerResult = await readFromText(input.content, mistralClient, country);
     if (!readerResult.success || !readerResult.data) {
       throw new Error(`Reader agent failed: ${readerResult.error}`);
     }
@@ -140,7 +139,7 @@ export async function analyzeDocument(
   let effectiveAnalysisType: AnalysisType = input.analysisType;
 
   if (input.analysisType !== "scam") {
-    const triage = await triageDocument(structuredText, mistralClient);
+    const triage = await triageDocument(structuredText, mistralClient, country);
     if (triage.success && triage.data) {
       legalContext = triage.data;
       effectiveAnalysisType = triage.data.analysis_type_override;
@@ -148,7 +147,6 @@ export async function analyzeDocument(
       totalTokensOut += triage.tokensOutput;
       totalCost += estimateCost(triage.modelUsed, triage.tokensInput, triage.tokensOutput);
     }
-    // If triage fails → graceful degradation, use frontend-provided type
   }
 
   // Step 3: Simplifier Agent → summary + abuse_score
@@ -157,7 +155,8 @@ export async function analyzeDocument(
     effectiveAnalysisType,
     input.simplificationLevel,
     mistralClient,
-    legalContext
+    legalContext,
+    country
   );
 
   if (!simplifierResult.success || !simplifierResult.data) {
@@ -209,7 +208,6 @@ export async function analyzeDocument(
   if (effectiveAnalysisType === "tos" && abuseScore !== null && structuredDoc?.orgao_emissor) {
     const companyName = structuredDoc.orgao_emissor;
 
-    // Extract top issues from abusive clauses
     const topIssues =
       "clausulas_abusivas" in simplifierResult.data
         ? (simplifierResult.data as { clausulas_abusivas: Array<{ explicacao_simples: string; gravidade: string }> })
@@ -217,7 +215,6 @@ export async function analyzeDocument(
             .map((cl) => ({ issue: cl.explicacao_simples, gravidade: cl.gravidade }))
         : [];
 
-    // Try to fetch existing ranking
     const { data: existing } = await supabaseAdmin
       .from("company_rankings")
       .select("id, avg_abuse_score, total_analyses")
@@ -225,7 +222,6 @@ export async function analyzeDocument(
       .single();
 
     if (existing) {
-      // Update running average
       const newTotal = existing.total_analyses + 1;
       const newAvg =
         (existing.avg_abuse_score * existing.total_analyses + abuseScore) / newTotal;

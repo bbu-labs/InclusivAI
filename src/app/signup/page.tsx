@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { apiSignup } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +12,7 @@ import Navbar from "@/components/Navbar";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { setSession, setProfile } = useAuth();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -52,7 +54,7 @@ export default function SignupPage() {
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Erro ao criar conta"
+        err instanceof Error ? err.message : t("signup.error")
       );
     } finally {
       setLoading(false);
@@ -69,13 +71,13 @@ export default function SignupPage() {
             <div className="bg-primary/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
               <IoMail className="text-4xl text-primary" />
             </div>
-            <h1 className="text-3xl font-extrabold mb-3">Verifique seu email</h1>
+            <h1 className="text-3xl font-extrabold mb-3">{t("signup.verifyTitle")}</h1>
             <p className="text-base-content/60 mb-6">
-              Enviamos um link de confirmação para <strong>{email}</strong>.
-              Clique no link para ativar sua conta.
+              {t("signup.verifyText")} <strong>{email}</strong>.
+              {t("signup.verifyAction")}
             </p>
             <Link href="/login" className="btn btn-primary btn-lg">
-              Ir para Login
+              {t("signup.goToLogin")}
             </Link>
           </div>
         </div>
@@ -91,9 +93,9 @@ export default function SignupPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-extrabold mb-2">Criar Conta</h1>
+            <h1 className="text-3xl font-extrabold mb-2">{t("signup.title")}</h1>
             <p className="text-base-content/60">
-              Crie uma conta gratuita para começar
+              {t("signup.subtitle")}
             </p>
           </div>
 
@@ -106,13 +108,13 @@ export default function SignupPage() {
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-medium">Nome (opcional)</span>
+                <span className="label-text font-medium">{t("signup.name")}</span>
               </label>
               <label className="input input-bordered flex items-center gap-3">
                 <IoPerson className="text-base-content/40" />
                 <input
                   type="text"
-                  placeholder="Seu nome completo"
+                  placeholder={t("signup.namePlaceholder")}
                   className="grow"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -122,13 +124,13 @@ export default function SignupPage() {
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-medium">Email</span>
+                <span className="label-text font-medium">{t("signup.email")}</span>
               </label>
               <label className="input input-bordered flex items-center gap-3">
                 <IoMail className="text-base-content/40" />
                 <input
                   type="email"
-                  placeholder="seu@email.com"
+                  placeholder={t("signup.emailPlaceholder")}
                   className="grow"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -139,13 +141,13 @@ export default function SignupPage() {
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-medium">Senha</span>
+                <span className="label-text font-medium">{t("signup.password")}</span>
               </label>
               <label className="input input-bordered flex items-center gap-3">
                 <IoLockClosed className="text-base-content/40" />
                 <input
                   type="password"
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder={t("signup.passwordPlaceholder")}
                   className="grow"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -163,15 +165,15 @@ export default function SignupPage() {
               {loading ? (
                 <span className="loading loading-spinner loading-sm" />
               ) : (
-                "Criar Conta"
+                t("signup.submit")
               )}
             </button>
           </form>
 
           <p className="text-center text-sm text-base-content/60 mt-6">
-            Já tem conta?{" "}
+            {t("signup.hasAccount")}{" "}
             <Link href="/login" className="text-primary font-semibold hover:underline">
-              Entrar
+              {t("signup.login")}
             </Link>
           </p>
         </div>

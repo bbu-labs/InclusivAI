@@ -1,3 +1,6 @@
+import type { SupportedCountry } from "../types";
+import { getFramework } from "./legal-frameworks";
+
 export const DOC_GEN_TYPES = [
   "carta_reclamacao_procon",
   "peticao_juizado_especial",
@@ -6,15 +9,49 @@ export const DOC_GEN_TYPES = [
 
 export type DocGenType = (typeof DOC_GEN_TYPES)[number];
 
-export const DOC_GEN_SYSTEM_PROMPT = `Você é um advogado especialista em direito do consumidor brasileiro. Sua tarefa é gerar documentos jurídicos baseados nas informações fornecidas.
+export function buildDocGenPrompt(country: SupportedCountry = "BR"): string {
+  const fw = getFramework(country);
+
+  if (country === "US") {
+    return `You are a consumer protection attorney specialist for the United States. Your task is to generate legal documents based on the provided information.
+
+${fw.languageInstruction}
+
+Rules:
+1. ALWAYS return valid JSON with the structure: { "documento": "...", "tipo": "...", "instrucoes": "..." }
+2. The "documento" field must contain the complete document text, formatted and ready to use
+3. Use [FILL IN] as a placeholder for data the consumer needs to complete
+4. Cite specific sections of the ${fw.consumerProtection.primaryLaw} when applicable
+5. Use formal, legally correct language
+6. The "instrucoes" field should explain how to use the generated document`;
+  }
+
+  if (country === "FR") {
+    return `Vous êtes un avocat spécialisé en droit de la consommation en France. Votre tâche est de générer des documents juridiques basés sur les informations fournies.
+
+${fw.languageInstruction}
+
+Règles :
+1. TOUJOURS retourner du JSON valide avec la structure : { "documento": "...", "tipo": "...", "instrucoes": "..." }
+2. Le champ "documento" doit contenir le texte complet du document, formaté et prêt à l'emploi
+3. Utilisez [À COMPLÉTER] comme marqueur pour les données que le consommateur doit compléter
+4. Citez les articles spécifiques du ${fw.consumerProtection.primaryLaw} quand applicable
+5. Utilisez un langage formel et juridiquement correct
+6. Le champ "instrucoes" doit expliquer comment utiliser le document généré`;
+  }
+
+  return `Você é um advogado especialista em direito do consumidor brasileiro. Sua tarefa é gerar documentos jurídicos baseados nas informações fornecidas.
+
+${fw.languageInstruction}
 
 Regras:
 1. SEMPRE retorne JSON válido com a estrutura: { "documento": "...", "tipo": "...", "instrucoes": "..." }
 2. O campo "documento" deve conter o texto completo do documento, formatado e pronto para uso
 3. Use [PREENCHER] como marcador para dados que o consumidor precisa completar
-4. Cite artigos específicos do CDC (Lei 8.078/90) quando aplicável
+4. Cite artigos específicos do ${fw.consumerProtection.primaryLaw} quando aplicável
 5. Use linguagem formal e juridicamente correta
 6. O campo "instrucoes" deve explicar como usar o documento gerado`;
+}
 
 export const DOC_GEN_PROMPTS: Record<DocGenType, string> = {
   carta_reclamacao_procon: `Gere uma carta de reclamação formal para o Procon com base nos dados fornecidos.
@@ -95,3 +132,6 @@ ${consumerData.problema}
 ## Tentativas anteriores de solução: ${consumerData.tentativas_anteriores || "Nenhuma"}
 ## O que o consumidor deseja: ${consumerData.pedido || "Resolução do problema"}`;
 };
+
+// Backward-compatible export
+export const DOC_GEN_SYSTEM_PROMPT = buildDocGenPrompt("BR");

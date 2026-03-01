@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiUpdateProfile } from "@/lib/api";
 import {
@@ -10,21 +11,30 @@ import {
   EXPERIENCE_PROFILES,
 } from "@/lib/experience-profiles";
 import type { AgeRange, EducationLevel, PreferredOutput } from "@/types";
+import type { SupportedCountry, SupportedLanguage } from "@/lib/i18n";
 import StepIndicator from "@/components/StepIndicator";
 import Navbar from "@/components/Navbar";
+import CountryStep from "@/components/onboarding/CountryStep";
 import WelcomeStep from "@/components/onboarding/WelcomeStep";
 import AgeStep from "@/components/onboarding/AgeStep";
 import AccessibilityStep from "@/components/onboarding/AccessibilityStep";
 import PreferencesStep from "@/components/onboarding/PreferencesStep";
 import TutorialStep from "@/components/onboarding/TutorialStep";
 
-const STEPS = ["Boas-vindas", "Idade", "Acessibilidade", "Preferências", "Tutorial"];
-
 export default function OnboardingPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { profile, setProfile } = useAuth();
   const [step, setStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Country / language state
+  const [country, setCountry] = useState<SupportedCountry | null>(
+    (profile?.country as SupportedCountry) ?? null,
+  );
+  const [language, setLanguage] = useState<SupportedLanguage | null>(
+    (profile?.language as SupportedLanguage) ?? null,
+  );
 
   // Form state
   const [ageRange, setAgeRange] = useState<AgeRange | null>(
@@ -46,11 +56,27 @@ export default function OnboardingPage() {
     profile?.preferred_output ?? "text",
   );
 
+  const STEPS = [
+    t("onboarding.steps.country"),
+    t("onboarding.steps.welcome"),
+    t("onboarding.steps.age"),
+    t("onboarding.steps.accessibility"),
+    t("onboarding.steps.preferences"),
+    t("onboarding.steps.tutorial"),
+  ];
+
+  const handleCountrySelect = useCallback(
+    (c: SupportedCountry, lang: SupportedLanguage) => {
+      setCountry(c);
+      setLanguage(lang);
+    },
+    [],
+  );
+
   const handleAgeChange = useCallback(
     (range: AgeRange, group: AgeGroup) => {
       setAgeRange(range);
       setAgeGroup(group);
-      // Apply age-based defaults
       const xp = EXPERIENCE_PROFILES[group];
       setFontSize(xp.defaultFontSize);
       setHighContrast(xp.autoHighContrast);
@@ -64,7 +90,7 @@ export default function OnboardingPage() {
     if (!ageRange || !educationLevel) return;
     setIsSubmitting(true);
     try {
-      const updates = {
+      const updates: Record<string, unknown> = {
         age_range: ageRange,
         education_level: educationLevel,
         preferred_output: preferredOutput,
@@ -72,7 +98,10 @@ export default function OnboardingPage() {
         high_contrast: highContrast,
         has_onboarded: true,
       };
-      const { profile: updated } = await apiUpdateProfile(updates);
+      if (country) updates.country = country;
+      if (language) updates.language = language;
+
+      const { profile: updated } = await apiUpdateProfile(updates as never);
       setProfile(updated);
       router.push("/analyze");
     } catch {
@@ -84,6 +113,8 @@ export default function OnboardingPage() {
     preferredOutput,
     fontSize,
     highContrast,
+    country,
+    language,
     setProfile,
     router,
   ]);
@@ -99,8 +130,15 @@ export default function OnboardingPage() {
           <StepIndicator steps={STEPS} currentStep={step} />
 
           <div className="flex-1 flex flex-col justify-center py-6">
-            {step === 0 && <WelcomeStep onNext={next} />}
-            {step === 1 && (
+            {step === 0 && (
+              <CountryStep
+                country={country}
+                onSelect={handleCountrySelect}
+                onNext={next}
+              />
+            )}
+            {step === 1 && <WelcomeStep onNext={next} />}
+            {step === 2 && (
               <AgeStep
                 value={ageRange}
                 onChange={handleAgeChange}
@@ -108,7 +146,7 @@ export default function OnboardingPage() {
                 onBack={back}
               />
             )}
-            {step === 2 && (
+            {step === 3 && (
               <AccessibilityStep
                 fontSize={fontSize}
                 highContrast={highContrast}
@@ -119,7 +157,7 @@ export default function OnboardingPage() {
                 onBack={back}
               />
             )}
-            {step === 3 && (
+            {step === 4 && (
               <PreferencesStep
                 educationLevel={educationLevel}
                 preferredOutput={preferredOutput}
@@ -130,7 +168,7 @@ export default function OnboardingPage() {
                 onBack={back}
               />
             )}
-            {step === 4 && (
+            {step === 5 && (
               <TutorialStep
                 ageGroup={ageGroup}
                 onFinish={handleFinish}

@@ -1,10 +1,10 @@
 import { runAgent, type AgentResult } from "./base";
 import { TOS_ANALYSIS_SYSTEM_PROMPT, TOS_ANALYSIS_USER_PROMPT } from "../prompts/tos-analysis";
-import { SCAM_DETECTION_SYSTEM_PROMPT, SCAM_DETECTION_USER_PROMPT } from "../prompts/scam-detection";
+import { buildScamDetectionPrompt, buildScamDetectionUserPrompt } from "../prompts/scam-detection";
 import { GENERAL_SIMPLIFIER_SYSTEM_PROMPT, GENERAL_SIMPLIFIER_USER_PROMPT } from "../prompts/simplifier";
 import { MISTRAL_LARGE, type MistralClient } from "../services/mistral";
 import { truncateToTokens } from "../lib/token-utils";
-import type { AnalysisType, SimplificationLevel } from "../types";
+import type { AnalysisType, SimplificationLevel, SupportedCountry } from "../types";
 import type { LegalContext } from "../prompts/legal-triage";
 
 const INPUT_TOKEN_LIMIT = 8000;
@@ -66,25 +66,26 @@ function getPrompts(
   analysisType: AnalysisType,
   level: SimplificationLevel,
   documentText: string,
-  legalContext?: LegalContext
+  legalContext?: LegalContext,
+  country: SupportedCountry = "BR"
 ): { system: string; user: string } {
   const truncated = truncateToTokens(documentText, INPUT_TOKEN_LIMIT);
 
   switch (analysisType) {
     case "tos":
       return {
-        system: TOS_ANALYSIS_SYSTEM_PROMPT(level, legalContext),
-        user: TOS_ANALYSIS_USER_PROMPT(truncated),
+        system: TOS_ANALYSIS_SYSTEM_PROMPT(level, legalContext, country),
+        user: TOS_ANALYSIS_USER_PROMPT(truncated, country),
       };
     case "scam":
       return {
-        system: SCAM_DETECTION_SYSTEM_PROMPT,
-        user: SCAM_DETECTION_USER_PROMPT(truncated),
+        system: buildScamDetectionPrompt(country),
+        user: buildScamDetectionUserPrompt(truncated, country),
       };
     case "general":
       return {
-        system: GENERAL_SIMPLIFIER_SYSTEM_PROMPT(level, legalContext),
-        user: GENERAL_SIMPLIFIER_USER_PROMPT(truncated),
+        system: GENERAL_SIMPLIFIER_SYSTEM_PROMPT(level, legalContext, country),
+        user: GENERAL_SIMPLIFIER_USER_PROMPT(truncated, country),
       };
   }
 }
@@ -94,9 +95,10 @@ export function simplifyDocument(
   analysisType: AnalysisType,
   simplificationLevel: SimplificationLevel,
   mistralClient: MistralClient,
-  legalContext?: LegalContext
+  legalContext?: LegalContext,
+  country: SupportedCountry = "BR"
 ): Promise<AgentResult<SimplifierResult>> {
-  const { system, user } = getPrompts(analysisType, simplificationLevel, documentText, legalContext);
+  const { system, user } = getPrompts(analysisType, simplificationLevel, documentText, legalContext, country);
 
   return runAgent<SimplifierResult>(MISTRAL_LARGE, () =>
     mistralClient.chatJSON<SimplifierResult>(

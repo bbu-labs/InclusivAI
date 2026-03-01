@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { IoShield, IoPersonCircle, IoLogOut, IoList, IoTrophy, IoSettings, IoArrowBack } from "react-icons/io5";
 import { useAuth } from "@/contexts/AuthContext";
 import { useExperience } from "@/contexts/ExperienceContext";
+import { useTranslation } from "react-i18next";
 
 interface NavbarProps {
   variant?: "transparent" | "solid";
@@ -30,6 +31,7 @@ export default function Navbar({
   statusText,
   hideUserMenu = false,
 }: NavbarProps) {
+  const { t } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
   const { session, user, logout } = useAuth();
@@ -70,7 +72,7 @@ export default function Navbar({
               ? "text-white hover:text-secondary"
               : "text-black hover:text-primary"
           }`}
-          aria-label="Ir para página inicial"
+          aria-label={t("navbar.goHome")}
         >
           <div
             className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
@@ -83,7 +85,7 @@ export default function Navbar({
               }`}
             />
           </div>
-          Cláusula Oculta
+          {t("common.brandName")}
         </Link>
 
         <div className="flex items-center gap-4">
@@ -129,7 +131,7 @@ export default function Navbar({
 
           {showAutoCta && (
             <Link href="/analyze" className="btn btn-primary btn-sm">
-              Analisar
+              {t("navbar.analyze")}
             </Link>
           )}
 
@@ -141,7 +143,7 @@ export default function Navbar({
                 className={`btn btn-ghost btn-circle ${
                   isTransparent ? "text-white hover:bg-white/10" : ""
                 }`}
-                aria-label="Menu do usuário"
+                aria-label={t("navbar.userMenu")}
               >
                 <IoPersonCircle className="w-6 h-6" />
               </div>
@@ -159,13 +161,13 @@ export default function Navbar({
                     <li>
                       <Link href="/analyze" className="gap-2 py-3 text-base">
                         <IoList className="text-lg" />
-                        Analisar
+                        {t("navbar.analyze")}
                       </Link>
                     </li>
                     <li>
                       <Link href="/settings" className="gap-2 py-3 text-base">
                         <IoSettings className="text-lg" />
-                        Configurações
+                        {t("navbar.settings")}
                       </Link>
                     </li>
                   </>
@@ -174,19 +176,19 @@ export default function Navbar({
                     <li>
                       <Link href="/analyses" className="gap-2">
                         <IoList className="text-base" />
-                        Minhas Análises
+                        {t("navbar.myAnalyses")}
                       </Link>
                     </li>
                     <li>
                       <Link href="/ranking" className="gap-2">
                         <IoTrophy className="text-base" />
-                        Ranking
+                        {t("navbar.ranking")}
                       </Link>
                     </li>
                     <li>
                       <Link href="/settings" className="gap-2">
                         <IoSettings className="text-base" />
-                        Configurações
+                        {t("navbar.settings")}
                       </Link>
                     </li>
                   </>
@@ -195,7 +197,7 @@ export default function Navbar({
                 <li>
                   <button onClick={() => logout()} className={`gap-2 text-error ${xp.simplifiedNav ? "py-3 text-base" : ""}`}>
                     <IoLogOut className={xp.simplifiedNav ? "text-lg" : "text-base"} />
-                    Sair
+                    {t("navbar.logout")}
                   </button>
                 </li>
               </ul>
@@ -207,7 +209,7 @@ export default function Navbar({
                 isTransparent ? "text-white hover:bg-white/10" : ""
               }`}
             >
-              Entrar
+              {t("navbar.login")}
             </Link>
           ) : null}
         </div>

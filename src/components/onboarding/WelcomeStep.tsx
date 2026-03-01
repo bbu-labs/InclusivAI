@@ -1,10 +1,13 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
+
 interface WelcomeStepProps {
   onNext: () => void;
 }
 
 export default function WelcomeStep({ onNext }: WelcomeStepProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center text-center gap-6 py-8 animate-fade-in">
       <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
@@ -24,15 +27,14 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
 
       <div className="space-y-3 max-w-md">
         <h1 className="text-2xl font-bold text-base-content">
-          Bem-vindo ao Cláusula Oculta!
+          {t("onboarding.welcome.title")}
         </h1>
         <p className="text-base-content/70 text-lg leading-relaxed">
-          Vamos personalizar sua experiência em{" "}
-          <strong>4 passos rápidos</strong> para que tudo fique do seu jeito.
+          {t("onboarding.welcome.body1")}{" "}
+          <strong>{t("onboarding.welcome.steps")}</strong> {t("onboarding.welcome.body2")}
         </p>
         <p className="text-base-content/60 text-sm">
-          Tamanho de texto, contraste, tipo de saída — tudo será ajustado para
-          você.
+          {t("onboarding.welcome.body3")}
         </p>
       </div>
 
@@ -40,7 +42,7 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
         onClick={onNext}
         className="btn btn-primary btn-lg mt-4 min-w-[200px] xp-btn"
       >
-        Começar
+        {t("onboarding.welcome.start")}
       </button>
     </div>
   );

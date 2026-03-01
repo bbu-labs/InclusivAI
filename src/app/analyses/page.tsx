@@ -3,13 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiListAnalyses } from "@/lib/api";
 import type { ApiAnalysisListItem } from "@/types";
 import {
   computeProtectionScore,
-  ANALYSIS_TYPE_LABELS,
-  DOC_TYPE_LABELS,
   type DocType,
   type AnalysisType,
 } from "@/types";
@@ -49,6 +48,7 @@ function ScoreIndicator({ abuseScore }: { abuseScore: number | null }) {
 }
 
 export default function AnalysesPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { session, isLoading: authLoading } = useAuth();
   const [analyses, setAnalyses] = useState<ApiAnalysisListItem[]>([]);
@@ -69,14 +69,14 @@ export default function AnalysesPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      <Navbar pageAction={<Link href="/analyze" className="btn btn-primary btn-sm">Nova Análise</Link>} />
+      <Navbar pageAction={<Link href="/analyze" className="btn btn-primary btn-sm">{t("analyses.newAnalysis")}</Link>} />
 
       {/* Content */}
       <div className="pt-16">
         <div className="max-w-4xl mx-auto px-6 py-8">
-          <h1 className="text-3xl font-extrabold mb-2">Minhas Análises</h1>
+          <h1 className="text-3xl font-extrabold mb-2">{t("analyses.title")}</h1>
           <p className="text-base-content/60 mb-8">
-            Resultados das suas análises anteriores
+            {t("analyses.subtitle")}
           </p>
 
           {loading ? (
@@ -98,12 +98,12 @@ export default function AnalysesPage() {
               <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <IoSearch className="text-4xl text-primary" />
               </div>
-              <h3 className="text-lg font-bold mb-2">Nenhuma análise ainda</h3>
+              <h3 className="text-lg font-bold mb-2">{t("analyses.emptyTitle")}</h3>
               <p className="text-base-content/50 mb-6 max-w-sm mx-auto">
-                Analise seu primeiro documento e os resultados aparecerão aqui.
+                {t("analyses.emptyDesc")}
               </p>
               <Link href="/analyze" className="btn btn-primary">
-                Analisar seu primeiro documento
+                {t("analyses.emptyCta")}
               </Link>
             </div>
           ) : (
@@ -114,7 +114,7 @@ export default function AnalysesPage() {
                     key={item.id}
                     className="card bg-base-200 w-full text-left cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => router.push(`/analyses/${item.id}`)}
-                    aria-label={`Ver análise: ${item.documentTitle}`}
+                    aria-label={t("analyses.viewAria", { title: item.documentTitle })}
                   >
                     <div className="card-body p-4 flex-row items-center gap-4">
                       <ScoreIndicator abuseScore={item.abuseScore} />
@@ -124,13 +124,13 @@ export default function AnalysesPage() {
                         </p>
                         <div className="flex flex-wrap items-center gap-2 mt-1">
                           <span className="badge badge-sm badge-primary badge-outline">
-                            {ANALYSIS_TYPE_LABELS[item.analysisType as AnalysisType] || item.analysisType}
+                            {t("analysisTypes." + item.analysisType) || item.analysisType}
                           </span>
                           <span className="badge badge-sm badge-outline">
-                            {DOC_TYPE_LABELS[item.documentType as DocType] || item.documentType}
+                            {t("docTypes." + item.documentType) || item.documentType}
                           </span>
                           <span className="text-xs text-base-content/40">
-                            {new Date(item.createdAt).toLocaleDateString("pt-BR")}
+                            {new Date(item.createdAt).toLocaleDateString()}
                           </span>
                         </div>
                         {item.summaryPreview && (

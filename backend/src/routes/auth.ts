@@ -3,7 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import type { AppEnv } from "../types";
 import { requireAuth } from "../middleware/auth";
-import { AGE_RANGES, EDUCATION_LEVELS, PREFERRED_OUTPUTS } from "../types";
+import { AGE_RANGES, EDUCATION_LEVELS, PREFERRED_OUTPUTS, SUPPORTED_COUNTRIES, SUPPORTED_LANGUAGES } from "../types";
 
 const auth = new Hono<AppEnv>();
 
@@ -26,6 +26,8 @@ const profileUpdateSchema = z.object({
   font_size: z.number().min(12).max(32).optional(),
   high_contrast: z.boolean().optional(),
   has_onboarded: z.boolean().optional(),
+  country: z.enum(SUPPORTED_COUNTRIES).optional(),
+  language: z.enum(SUPPORTED_LANGUAGES).optional(),
 });
 
 // POST /api/auth/signup

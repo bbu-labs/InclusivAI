@@ -2,20 +2,32 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiUpdateProfile, ApiError } from "@/lib/api";
 import type { PreferredOutput, AgeRange, EducationLevel } from "@/types";
+import {
+  SUPPORTED_COUNTRIES,
+  COUNTRY_LANGUAGE_MAP,
+  COUNTRY_FLAGS,
+  COUNTRY_NAMES,
+  type SupportedCountry,
+  type SupportedLanguage,
+} from "@/lib/i18n";
 import { IoSave } from "react-icons/io5";
 import Navbar from "@/components/Navbar";
 import { useToast } from "@/components/Toast";
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
   const { session, profile, setProfile, isLoading: authLoading } = useAuth();
   const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [country, setCountry] = useState<SupportedCountry>("BR");
+  const [language, setLanguage] = useState<SupportedLanguage>("pt-BR");
   const [preferredOutput, setPreferredOutput] = useState<PreferredOutput>("text");
   const [ageRange, setAgeRange] = useState<AgeRange | "">("");
   const [educationLevel, setEducationLevel] = useState<EducationLevel | "">("");
@@ -29,6 +41,8 @@ export default function SettingsPage() {
       return;
     }
     if (profile) {
+      setCountry((profile.country as SupportedCountry) || "BR");
+      setLanguage((profile.language as SupportedLanguage) || "pt-BR");
       setPreferredOutput(profile.preferred_output);
       setAgeRange(profile.age_range || "");
       setEducationLevel(profile.education_level || "");
@@ -36,6 +50,14 @@ export default function SettingsPage() {
       setHighContrast(profile.high_contrast);
     }
   }, [session, profile, authLoading, router]);
+
+  const handleCountryChange = (newCountry: SupportedCountry) => {
+    setCountry(newCountry);
+    const newLang = COUNTRY_LANGUAGE_MAP[newCountry];
+    setLanguage(newLang);
+    i18n.changeLanguage(newLang);
+    localStorage.setItem("inclusivai-language", newLang);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -46,30 +68,33 @@ export default function SettingsPage() {
         preferred_output: preferredOutput,
         font_size: fontSize,
         high_contrast: highContrast,
+        country,
+        language,
       };
       if (ageRange) updates.age_range = ageRange;
       if (educationLevel) updates.education_level = educationLevel;
 
       const { profile: updated } = await apiUpdateProfile(updates as never);
       setProfile(updated);
-      showToast("Configurações salvas com sucesso!", "success");
+      showToast(t("settings.saveSuccess"), "success");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Erro ao salvar");
+      setError(err instanceof ApiError ? err.message : t("settings.saveError"));
     } finally {
       setSaving(false);
     }
   };
 
+  const currentLang = (i18n.language || "pt-BR") as SupportedLanguage;
+
   return (
     <div className="min-h-screen bg-base-100">
       <Navbar />
 
-      {/* Content */}
       <div className="pt-16">
         <div className="max-w-2xl mx-auto px-6 py-8">
-          <h1 className="text-3xl font-extrabold mb-2">Configurações</h1>
+          <h1 className="text-3xl font-extrabold mb-2">{t("settings.title")}</h1>
           <p className="text-base-content/60 mb-4">
-            Personalize sua experiência
+            {t("settings.subtitle")}
           </p>
 
           {profile?.has_onboarded && (
@@ -77,16 +102,36 @@ export default function SettingsPage() {
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>Estas preferências foram definidas durante o onboarding. Altere a qualquer momento.</span>
+              <span>{t("settings.onboardingInfo")}</span>
             </div>
           )}
 
           <div className="space-y-6">
+            {/* Country */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-medium">
+                  {t("settings.countryLabel")}
+                </span>
+              </label>
+              <select
+                className="select select-bordered"
+                value={country}
+                onChange={(e) => handleCountryChange(e.target.value as SupportedCountry)}
+              >
+                {SUPPORTED_COUNTRIES.map((c) => (
+                  <option key={c} value={c}>
+                    {COUNTRY_FLAGS[c]} {COUNTRY_NAMES[c]?.[currentLang] || c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Preferred output */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text font-medium">
-                  Formato de saída preferido
+                  {t("settings.outputLabel")}
                 </span>
               </label>
               <select
@@ -96,23 +141,23 @@ export default function SettingsPage() {
                   setPreferredOutput(e.target.value as PreferredOutput)
                 }
               >
-                <option value="text">Texto</option>
-                <option value="audio">Áudio</option>
-                <option value="both">Texto e Áudio</option>
+                <option value="text">{t("settings.outputText")}</option>
+                <option value="audio">{t("settings.outputAudio")}</option>
+                <option value="both">{t("settings.outputBoth")}</option>
               </select>
             </div>
 
             {/* Age range */}
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-medium">Faixa etária</span>
+                <span className="label-text font-medium">{t("settings.ageLabel")}</span>
               </label>
               <select
                 className="select select-bordered"
                 value={ageRange}
                 onChange={(e) => setAgeRange(e.target.value as AgeRange)}
               >
-                <option value="">Não informar</option>
+                <option value="">{t("settings.ageNone")}</option>
                 <option value="18-24">18-24</option>
                 <option value="25-34">25-34</option>
                 <option value="35-44">35-44</option>
@@ -125,7 +170,7 @@ export default function SettingsPage() {
             {/* Education level */}
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-medium">Escolaridade</span>
+                <span className="label-text font-medium">{t("settings.educationLabel")}</span>
               </label>
               <select
                 className="select select-bordered"
@@ -134,11 +179,11 @@ export default function SettingsPage() {
                   setEducationLevel(e.target.value as EducationLevel)
                 }
               >
-                <option value="">Não informar</option>
-                <option value="fundamental">Ensino Fundamental</option>
-                <option value="medio">Ensino Médio</option>
-                <option value="superior">Ensino Superior</option>
-                <option value="pos_graduacao">Pós-Graduação</option>
+                <option value="">{t("settings.educationNone")}</option>
+                <option value="fundamental">{t("settings.educationFundamental")}</option>
+                <option value="medio">{t("settings.educationMedio")}</option>
+                <option value="superior">{t("settings.educationSuperior")}</option>
+                <option value="pos_graduacao">{t("settings.educationPos")}</option>
               </select>
             </div>
 
@@ -146,7 +191,7 @@ export default function SettingsPage() {
             <div className="form-control">
               <label className="label">
                 <span className="label-text font-medium">
-                  Tamanho da fonte: {fontSize}px
+                  {t("settings.fontSizeLabel", { size: fontSize })}
                 </span>
               </label>
               <input
@@ -173,7 +218,7 @@ export default function SettingsPage() {
                   checked={highContrast}
                   onChange={(e) => setHighContrast(e.target.checked)}
                 />
-                <span className="label-text font-medium">Alto contraste</span>
+                <span className="label-text font-medium">{t("settings.highContrast")}</span>
               </label>
             </div>
 
@@ -193,7 +238,7 @@ export default function SettingsPage() {
               ) : (
                 <>
                   <IoSave />
-                  Salvar
+                  {t("common.save")}
                 </>
               )}
             </button>
@@ -208,11 +253,11 @@ export default function SettingsPage() {
                   setProfile(updated);
                   router.push("/onboarding");
                 } catch {
-                  showToast("Erro ao reiniciar onboarding", "error");
+                  showToast(t("settings.redoError"), "error");
                 }
               }}
             >
-              Refazer onboarding
+              {t("settings.redoOnboarding")}
             </button>
           </div>
         </div>

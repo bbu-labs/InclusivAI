@@ -7,16 +7,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useExperience } from "@/contexts/ExperienceContext";
 import StepIndicator from "@/components/StepIndicator";
 import { IoDocumentText, IoCheckmark, IoClose } from "react-icons/io5";
-import { DOC_TYPE_LABELS, type DocType } from "@/types";
+import { type DocType } from "@/types";
 import Navbar from "@/components/Navbar";
-
-const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
+import { useTranslation } from "react-i18next";
 
 export default function ConfirmationPage() {
   const router = useRouter();
   const { state } = useApp();
   const { session } = useAuth();
   const { profile: xp } = useExperience();
+  const { t } = useTranslation();
+  const STEPS = [t("analyze.stepInput"), t("analyze.stepProcessing"), t("analyze.stepConfirmation"), t("analyze.stepResult")];
 
   useEffect(() => {
     if (!session) {
@@ -42,7 +43,7 @@ export default function ConfirmationPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      <Navbar backHref="/analyze" backLabel="Voltar" />
+      <Navbar backHref="/analyze" backLabel={t("confirmation.backLabel")} />
 
       {/* Main Content */}
       <div className="pt-16">
@@ -56,9 +57,9 @@ export default function ConfirmationPage() {
                 <div className="bg-primary/10 rounded-full p-6 mb-4">
                   <IoDocumentText className="text-5xl text-primary" />
                 </div>
-                <h2 className="card-title text-xl mb-2">Documento Identificado</h2>
+                <h2 className="card-title text-xl mb-2">{t("confirmation.title")}</h2>
                 <div className="badge badge-primary badge-lg text-sm px-4 py-3">
-                  {DOC_TYPE_LABELS[docType] || docType}
+                  {t("docTypes." + docType) || docType}
                 </div>
                 <p className="text-base-content/70 mt-4 text-lg font-medium">
                   {state.document.title}
@@ -69,14 +70,14 @@ export default function ConfirmationPage() {
             {/* Confirmation question */}
             <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 mb-8">
               <p className="font-bold text-center text-lg mb-2">
-                Este é realmente um documento do tipo{" "}
+                {t("confirmation.question")}{" "}
                 <span className="text-primary">
-                  {DOC_TYPE_LABELS[docType] || docType}
+                  {t("docTypes." + docType) || docType}
                 </span>
                 ?
               </p>
               <p className="text-sm text-base-content/60 text-center">
-                A confirmação ajuda a IA a fazer uma análise mais precisa.
+                {t("confirmation.hint")}
               </p>
             </div>
 
@@ -85,7 +86,7 @@ export default function ConfirmationPage() {
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Dica: Se não tem certeza, clique &quot;Não, voltar&quot;. Nada será perdido.</span>
+                <span>{t("confirmation.seniorTip")}</span>
               </div>
             )}
 
@@ -96,14 +97,14 @@ export default function ConfirmationPage() {
                 onClick={handleReject}
               >
                 <IoClose className="text-lg" />
-                Não, voltar
+                {t("confirmation.reject")}
               </button>
               <button
                 className="btn btn-primary btn-lg gap-2"
                 onClick={handleConfirm}
               >
                 <IoCheckmark className="text-lg" />
-                Sim, analisar
+                {t("confirmation.confirm")}
               </button>
             </div>
           </div>
