@@ -2,17 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiUpdateProfile, ApiError } from "@/lib/api";
 import type { PreferredOutput, AgeRange, EducationLevel } from "@/types";
-import { IoShield, IoSave } from "react-icons/io5";
+import { IoSave } from "react-icons/io5";
+import Navbar from "@/components/Navbar";
+import { useToast } from "@/components/Toast";
 
 export default function SettingsPage() {
   const router = useRouter();
   const { session, profile, setProfile, isLoading: authLoading } = useAuth();
+  const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [preferredOutput, setPreferredOutput] = useState<PreferredOutput>("text");
@@ -39,7 +40,6 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaving(true);
     setError(null);
-    setSuccess(false);
 
     try {
       const updates: Record<string, unknown> = {
@@ -52,7 +52,7 @@ export default function SettingsPage() {
 
       const { profile: updated } = await apiUpdateProfile(updates as never);
       setProfile(updated);
-      setSuccess(true);
+      showToast("Configurações salvas com sucesso!", "success");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Erro ao salvar");
     } finally {
@@ -62,20 +62,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-          >
-            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-              <IoShield className="w-5 h-5 text-black" />
-            </div>
-            Cláusula Oculta
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Content */}
       <div className="pt-16">
@@ -184,12 +171,6 @@ export default function SettingsPage() {
             {error && (
               <div className="alert alert-error text-sm">
                 <span>{error}</span>
-              </div>
-            )}
-
-            {success && (
-              <div className="alert alert-success text-sm">
-                <span>Configurações salvas com sucesso!</span>
               </div>
             )}
 

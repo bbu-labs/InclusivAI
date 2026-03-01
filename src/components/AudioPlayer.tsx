@@ -149,16 +149,28 @@ export default function AudioPlayer({ analysisId, initialUrl, fallbackText }: Au
   if (ttsActive) {
     return (
       <div className="flex items-center gap-3 bg-base-200 rounded-xl p-3">
-        <button className="btn btn-circle btn-sm btn-primary" onClick={toggleTTS}>
+        <button
+          className="btn btn-circle btn-sm btn-primary"
+          onClick={toggleTTS}
+          aria-label={ttsSpeaking && !window.speechSynthesis?.paused ? "Pausar áudio" : "Reproduzir áudio"}
+        >
           {ttsSpeaking && !window.speechSynthesis?.paused ? <IoPause /> : <IoPlay />}
         </button>
         <div className="flex-1">
           <p className="text-xs text-base-content/60">Áudio do navegador</p>
         </div>
-        <button className="btn btn-ghost btn-xs" onClick={changeTTSSpeed}>
+        <button
+          className="btn btn-ghost btn-xs"
+          onClick={changeTTSSpeed}
+          aria-label={`Velocidade ${ttsSpeed}x`}
+        >
           {ttsSpeed}x
         </button>
-        <button className="btn btn-ghost btn-xs text-error" onClick={stopTTS}>
+        <button
+          className="btn btn-ghost btn-xs text-error"
+          onClick={stopTTS}
+          aria-label="Parar áudio"
+        >
           Parar
         </button>
       </div>
@@ -173,6 +185,7 @@ export default function AudioPlayer({ analysisId, initialUrl, fallbackText }: Au
           className="btn btn-outline btn-sm gap-2"
           onClick={handleGenerate}
           disabled={loading}
+          aria-label="Gerar áudio da análise"
         >
           {loading ? (
             <span className="loading loading-spinner loading-xs" />
@@ -188,6 +201,7 @@ export default function AudioPlayer({ analysisId, initialUrl, fallbackText }: Au
               <button
                 className="btn btn-outline btn-xs gap-1 mt-2"
                 onClick={startBrowserTTS}
+                aria-label="Ouvir com voz do navegador"
               >
                 <IoVolumeHigh className="text-sm" />
                 Ouvir com voz do navegador
@@ -207,7 +221,11 @@ export default function AudioPlayer({ analysisId, initialUrl, fallbackText }: Au
         src={audioUrl}
         onEnded={() => setIsPlaying(false)}
       />
-      <button className="btn btn-circle btn-sm btn-primary" onClick={togglePlay}>
+      <button
+        className="btn btn-circle btn-sm btn-primary"
+        onClick={togglePlay}
+        aria-label={isPlaying ? "Pausar áudio" : "Reproduzir áudio"}
+      >
         {isPlaying ? <IoPause /> : <IoPlay />}
       </button>
       <div className="flex-1">
@@ -216,6 +234,7 @@ export default function AudioPlayer({ analysisId, initialUrl, fallbackText }: Au
       <button
         className="btn btn-ghost btn-xs"
         onClick={changeSpeed}
+        aria-label={`Velocidade ${speed}x`}
       >
         {speed}x
       </button>

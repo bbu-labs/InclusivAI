@@ -4,8 +4,9 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import StepIndicator from "@/components/StepIndicator";
-import { IoDocumentText, IoCheckmark, IoClose, IoShield } from "react-icons/io5";
+import { IoDocumentText, IoCheckmark, IoClose } from "react-icons/io5";
 import { DOC_TYPE_LABELS, type DocType } from "@/types";
+import Navbar from "@/components/Navbar";
 
 const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
 
@@ -33,26 +34,17 @@ export default function ConfirmationPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <button
-            onClick={() => router.push("/")}
-            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-          >
-            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-              <IoShield className="w-5 h-5 text-black" />
-            </div>
-            Cláusula Oculta
-          </button>
+      <Navbar
+        rightAction={
           <button
             onClick={() => router.back()}
-            className="px-4 py-2 bg-base-200 text-base-content font-semibold text-sm rounded-lg hover:bg-base-300 transition-colors"
+            className="btn btn-ghost btn-sm"
+            aria-label="Voltar"
           >
             Voltar
           </button>
-        </div>
-      </nav>
+        }
+      />
 
       {/* Main Content */}
       <div className="pt-16">

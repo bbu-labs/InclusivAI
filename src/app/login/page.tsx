@@ -6,7 +6,8 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { apiLogin } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { IoShield, IoMail, IoLockClosed } from "react-icons/io5";
+import { IoMail, IoLockClosed } from "react-icons/io5";
+import Navbar from "@/components/Navbar";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -50,20 +51,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-base-100 flex flex-col">
-      {/* Navbar */}
-      <nav className="border-b bg-base-100 border-base-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-          >
-            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-              <IoShield className="w-5 h-5 text-black" />
-            </div>
-            Cláusula Oculta
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Login Form */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">
@@ -115,6 +103,11 @@ export default function LoginPage() {
                   minLength={6}
                 />
               </label>
+              <div className="label">
+                <Link href="/forgot-password" className="label-text-alt text-primary hover:underline">
+                  Esqueceu a senha?
+                </Link>
+              </div>
             </div>
 
             <button

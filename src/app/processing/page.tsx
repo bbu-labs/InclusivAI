@@ -12,9 +12,9 @@ import {
   IoColorWand,
   IoSearch,
   IoCheckmarkCircle,
-  IoShield,
   IoRefresh,
 } from "react-icons/io5";
+import Navbar from "@/components/Navbar";
 
 const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
 
@@ -117,21 +117,11 @@ export default function ProcessingPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <button
-            onClick={() => router.push("/")}
-            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-          >
-            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-              <IoShield className="w-5 h-5 text-black" />
-            </div>
-            Cláusula Oculta
-          </button>
+      <Navbar
+        rightAction={
           <span className="text-sm text-base-content/60">Processando...</span>
-        </div>
-      </nav>
+        }
+      />
 
       {/* Main Content */}
       <div className="pt-16">

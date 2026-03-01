@@ -13,7 +13,6 @@ import {
   IoShareSocial,
   IoImage,
   IoHome,
-  IoShield,
   IoAlert,
   IoRefresh,
 } from "react-icons/io5";
@@ -24,6 +23,8 @@ import type {
   AnalysisDisplay,
 } from "@/types";
 import { computeProtectionScore } from "@/types";
+import Navbar from "@/components/Navbar";
+import { useToast } from "@/components/Toast";
 
 const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
 
@@ -32,6 +33,7 @@ const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
 export default function ResultsPage() {
   const router = useRouter();
   const { state, setAnalysisDisplay } = useApp();
+  const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [display, setDisplay] = useState<AnalysisDisplay | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -107,20 +109,11 @@ export default function ResultsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-base-100">
-        <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <button
-              onClick={() => router.push("/")}
-              className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-            >
-              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-                <IoShield className="w-5 h-5 text-black" />
-              </div>
-              Cláusula Oculta
-            </button>
+        <Navbar
+          rightAction={
             <span className="text-sm text-base-content/60">Analisando...</span>
-          </div>
-        </nav>
+          }
+        />
 
         <div className="pt-16">
           <div className="max-w-4xl mx-auto px-6 py-8">
@@ -154,19 +147,7 @@ export default function ResultsPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-base-100">
-        <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <button
-              onClick={() => router.push("/")}
-              className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-            >
-              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-                <IoShield className="w-5 h-5 text-black" />
-              </div>
-              Cláusula Oculta
-            </button>
-          </div>
-        </nav>
+        <Navbar />
 
         <div className="pt-16">
           <div className="max-w-4xl mx-auto px-6 py-8">
@@ -176,14 +157,14 @@ export default function ResultsPage() {
               <p className="text-base-content/60 text-center mb-6">{error}</p>
               <div className="flex gap-4">
                 <button
-                  className="btn btn-outline btn-lg"
+                  className="btn btn-outline gap-2"
                   onClick={() => router.push("/analyze")}
                 >
                   <IoHome className="text-lg" />
                   Nova Análise
                 </button>
                 <button
-                  className="btn btn-primary btn-lg gap-2"
+                  className="btn btn-primary gap-2"
                   onClick={() => {
                     setError(null);
                     setIsLoading(true);
@@ -210,26 +191,16 @@ export default function ResultsPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <button
-            onClick={() => router.push("/")}
-            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-          >
-            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-              <IoShield className="w-5 h-5 text-black" />
-            </div>
-            Cláusula Oculta
-          </button>
+      <Navbar
+        rightAction={
           <button
             onClick={() => router.push("/analyze")}
-            className="px-4 py-2 bg-base-200 text-base-content font-semibold text-sm rounded-lg hover:bg-base-300 transition-colors"
+            className="btn btn-primary btn-sm"
           >
             Nova Análise
           </button>
-        </div>
-      </nav>
+        }
+      />
 
       {/* Main Content */}
       <div className="pt-16">
@@ -279,9 +250,9 @@ export default function ResultsPage() {
             )}
 
             {/* Actions */}
-            <div className="grid md:grid-cols-3 gap-4 mt-6">
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
               <button
-                className="btn btn-outline btn-lg gap-2"
+                className="btn btn-outline flex-1 gap-2"
                 onClick={async () => {
                   try {
                     const { hash } = await apiGetShareHash(display.analysisId);
@@ -290,18 +261,19 @@ export default function ResultsPage() {
                       await navigator.share({ title: "Análise - Cláusula Oculta", url });
                     } else {
                       await navigator.clipboard.writeText(url);
-                      alert("Link copiado!");
+                      showToast("Link copiado!", "success");
                     }
                   } catch {
-                    alert("Erro ao compartilhar");
+                    showToast("Erro ao compartilhar", "error");
                   }
                 }}
+                aria-label="Compartilhar link da análise"
               >
                 <IoShareSocial />
                 Compartilhar Link
               </button>
               <button
-                className="btn btn-outline btn-lg gap-2"
+                className="btn btn-outline flex-1 gap-2"
                 disabled={sharingImage}
                 onClick={async () => {
                   setSharingImage(true);
@@ -309,11 +281,12 @@ export default function ResultsPage() {
                     const { hash } = await apiGetShareHash(display.analysisId);
                     await fetchAndShareImage(display.analysisId, hash);
                   } catch {
-                    alert("Erro ao gerar imagem");
+                    showToast("Erro ao gerar imagem", "error");
                   } finally {
                     setSharingImage(false);
                   }
                 }}
+                aria-label="Compartilhar imagem da análise"
               >
                 {sharingImage ? (
                   <span className="loading loading-spinner loading-sm" />
@@ -323,7 +296,7 @@ export default function ResultsPage() {
                 Compartilhar Imagem
               </button>
               <button
-                className="btn btn-primary btn-lg gap-2"
+                className="btn btn-primary flex-1 gap-2"
                 onClick={() => router.push("/analyze")}
               >
                 <IoHome />

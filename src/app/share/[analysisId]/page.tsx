@@ -6,7 +6,8 @@ import Link from "next/link";
 import { apiGetShareCard } from "@/lib/api";
 import type { ApiShareCard } from "@/types";
 import { DOC_TYPE_LABELS, type DocType, computeProtectionScore } from "@/types";
-import { IoShield, IoShieldCheckmark, IoWarning, IoAlert } from "react-icons/io5";
+import { IoShieldCheckmark, IoWarning, IoAlert } from "react-icons/io5";
+import Navbar from "@/components/Navbar";
 
 export default function SharePage() {
   const params = useParams();
@@ -58,23 +59,10 @@ export default function SharePage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      {/* Navbar */}
-      <nav className="border-b bg-base-100 border-base-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-          >
-            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-              <IoShield className="w-5 h-5 text-black" />
-            </div>
-            Cláusula Oculta
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Share card */}
-      <div className="max-w-lg mx-auto px-6 py-12">
+      <div className="max-w-lg mx-auto px-6 py-12 pt-24">
         <div className="card bg-base-200 shadow-xl">
           <div className="card-body items-center text-center">
             <div

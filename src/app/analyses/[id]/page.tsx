@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiGetAnalysis, apiGetDocument, apiGetShareHash } from "@/lib/api";
 import { fetchAndShareImage } from "@/lib/share-image";
@@ -14,11 +13,11 @@ import {
   buildAudioText,
 } from "@/components/AnalysisResults";
 import {
-  IoShield,
   IoArrowBack,
   IoShareSocial,
   IoImage,
   IoAlert,
+  IoHome,
 } from "react-icons/io5";
 import type {
   ApiAnalysis,
@@ -34,12 +33,15 @@ import {
   type DocType,
   type AnalysisType,
 } from "@/types";
+import Navbar from "@/components/Navbar";
+import { useToast } from "@/components/Toast";
 
 export default function AnalysisDetailPage() {
   const router = useRouter();
   const params = useParams();
   const analysisId = params.id as string;
   const { session, isLoading: authLoading } = useAuth();
+  const { showToast } = useToast();
   const [analysis, setAnalysis] = useState<ApiAnalysis | null>(null);
   const [document, setDocument] = useState<ApiDocument | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,10 +84,10 @@ export default function AnalysisDetailPage() {
         await navigator.share({ title: "Análise - Cláusula Oculta", url });
       } else {
         await navigator.clipboard.writeText(url);
-        alert("Link copiado!");
+        showToast("Link copiado!", "success");
       }
     } catch {
-      alert("Erro ao compartilhar");
+      showToast("Erro ao compartilhar", "error");
     }
   };
 
@@ -96,7 +98,7 @@ export default function AnalysisDetailPage() {
       const { hash } = await apiGetShareHash(analysis.id);
       await fetchAndShareImage(analysis.id, hash);
     } catch {
-      alert("Erro ao gerar imagem");
+      showToast("Erro ao gerar imagem", "error");
     } finally {
       setSharingImage(false);
     }
@@ -105,21 +107,16 @@ export default function AnalysisDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-base-100">
-        <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <Link
-              href="/"
-              className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-            >
-              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-                <IoShield className="w-5 h-5 text-black" />
-              </div>
-              Cláusula Oculta
-            </Link>
+        <Navbar />
+        <div className="pt-16">
+          <div className="max-w-3xl mx-auto px-6 py-8">
+            <div className="space-y-6 animate-pulse">
+              <div className="h-8 bg-base-200 rounded w-2/3 mx-auto" />
+              <div className="h-4 bg-base-200 rounded w-1/3 mx-auto" />
+              <div className="h-64 bg-base-200 rounded-2xl" />
+              <div className="h-32 bg-base-200 rounded-2xl" />
+            </div>
           </div>
-        </nav>
-        <div className="pt-16 flex justify-center py-24">
-          <span className="loading loading-spinner loading-lg text-primary" />
         </div>
       </div>
     );
@@ -128,19 +125,7 @@ export default function AnalysisDetailPage() {
   if (error || !analysis) {
     return (
       <div className="min-h-screen bg-base-100">
-        <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <Link
-              href="/"
-              className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-            >
-              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-                <IoShield className="w-5 h-5 text-black" />
-              </div>
-              Cláusula Oculta
-            </Link>
-          </div>
-        </nav>
+        <Navbar />
         <div className="pt-16">
           <div className="max-w-4xl mx-auto px-6 py-8 text-center">
             <IoAlert className="text-6xl text-error mx-auto mb-4" />
@@ -163,27 +148,18 @@ export default function AnalysisDetailPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-          >
-            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-              <IoShield className="w-5 h-5 text-black" />
-            </div>
-            Cláusula Oculta
-          </Link>
+      <Navbar
+        rightAction={
           <button
             onClick={() => router.push("/analyses")}
             className="btn btn-ghost btn-sm gap-1"
+            aria-label="Voltar para lista de análises"
           >
             <IoArrowBack />
             Voltar
           </button>
-        </div>
-      </nav>
+        }
+      />
 
       {/* Content */}
       <div className="pt-16">
@@ -242,18 +218,20 @@ export default function AnalysisDetailPage() {
           )}
 
           {/* Share actions */}
-          <div className="grid md:grid-cols-3 gap-4 mt-6">
+          <div className="flex flex-col sm:flex-row gap-3 mt-6">
             <button
-              className="btn btn-outline btn-lg gap-2"
+              className="btn btn-outline flex-1 gap-2"
               onClick={handleShareLink}
+              aria-label="Compartilhar link da análise"
             >
               <IoShareSocial />
               Compartilhar Link
             </button>
             <button
-              className="btn btn-outline btn-lg gap-2"
+              className="btn btn-outline flex-1 gap-2"
               onClick={handleShareImage}
               disabled={sharingImage}
+              aria-label="Compartilhar imagem da análise"
             >
               {sharingImage ? (
                 <span className="loading loading-spinner loading-sm" />
@@ -263,9 +241,10 @@ export default function AnalysisDetailPage() {
               Compartilhar Imagem
             </button>
             <button
-              className="btn btn-primary btn-lg gap-2"
+              className="btn btn-primary flex-1 gap-2"
               onClick={() => router.push("/analyze")}
             >
+              <IoHome />
               Analisar outro
             </button>
           </div>

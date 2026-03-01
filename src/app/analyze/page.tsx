@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,8 +15,8 @@ import {
   IoCloudUpload,
   IoCheckmarkCircle,
   IoAlert,
-  IoShield,
 } from "react-icons/io5";
+import Navbar from "@/components/Navbar";
 
 const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
 
@@ -45,32 +45,22 @@ export default function AnalyzePage() {
   const { setRawInput, setInputMethod, reset } = useApp();
   const { session } = useAuth();
   const [selectedMode, setSelectedMode] = useState<AnalysisMode | null>(null);
-  const [isScrolled, setIsScrolled] = useState(false);
-  
+
   // URL state
   const [url, setUrl] = useState("");
   const [urlError, setUrlError] = useState("");
-  
+
   // Camera state
   const [preview, setPreview] = useState<string | null>(null);
   const [cameraMode, setCameraMode] = useState<CameraMode>("choose");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  
+
   // Upload state
   const [file, setFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const uploadInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const validateUrl = (value: string): boolean => {
     try {
@@ -181,30 +171,16 @@ export default function AnalyzePage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      {/* ───── Navbar ───── */}
-      <nav className={`fixed top-0 w-full z-50 border-b transition-all duration-300 ${
-        isScrolled 
-          ? "bg-base-100/95 backdrop-blur-md border-base-200" 
-          : "bg-base-100 border-base-200"
-      }`}>
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <Navbar
+        rightAction={
           <button
             onClick={() => router.push("/")}
-            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-          >
-            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-              <IoShield className="w-5 h-5 text-black" />
-            </div>
-            Cláusula Oculta
-          </button>
-          <button
-            onClick={() => router.push("/")}
-            className="px-5 py-2 bg-secondary text-secondary-foreground font-semibold text-sm rounded-lg hover:opacity-90 transition-opacity"
+            className="btn btn-ghost btn-sm"
           >
             Voltar ao Início
           </button>
-        </div>
-      </nav>
+        }
+      />
 
       {/* ───── Main Content ───── */}
       <div className="pt-16">
@@ -224,8 +200,8 @@ export default function AnalyzePage() {
               {/* URL Card */}
               <button
                 className={`card shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 text-left ${
-                  selectedMode === "url" 
-                    ? "border-primary bg-primary/5" 
+                  selectedMode === "url"
+                    ? "border-primary bg-primary/5"
                     : "border-base-300 bg-base-100"
                 }`}
                 onClick={() => handleModeSelect("url")}
@@ -246,8 +222,8 @@ export default function AnalyzePage() {
               {/* Camera Card */}
               <button
                 className={`card shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 text-left ${
-                  selectedMode === "camera" 
-                    ? "border-primary bg-primary/5" 
+                  selectedMode === "camera"
+                    ? "border-primary bg-primary/5"
                     : "border-base-300 bg-base-100"
                 }`}
                 onClick={() => handleModeSelect("camera")}
@@ -268,8 +244,8 @@ export default function AnalyzePage() {
               {/* Upload Card */}
               <button
                 className={`card shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 text-left ${
-                  selectedMode === "upload" 
-                    ? "border-primary bg-primary/5" 
+                  selectedMode === "upload"
+                    ? "border-primary bg-primary/5"
                     : "border-base-300 bg-base-100"
                 }`}
                 onClick={() => handleModeSelect("upload")}
@@ -378,6 +354,7 @@ export default function AnalyzePage() {
                         <button
                           className="btn btn-circle btn-sm btn-error absolute top-3 right-3 shadow-lg"
                           onClick={handleCameraClear}
+                          aria-label="Remover imagem"
                         >
                           <IoClose />
                         </button>
@@ -459,7 +436,7 @@ export default function AnalyzePage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-lg truncate">{file.name}</p>
                         <p className="text-sm text-base-content/60">
-                          {formatFileSize(file.size)} • Arquivo válido
+                          {formatFileSize(file.size)} &bull; Arquivo válido
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -467,6 +444,7 @@ export default function AnalyzePage() {
                         <button
                           className="btn btn-ghost btn-circle"
                           onClick={() => setFile(null)}
+                          aria-label="Remover arquivo"
                         >
                           <IoClose className="text-lg" />
                         </button>

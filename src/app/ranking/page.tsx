@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiGetRanking } from "@/lib/api";
 import type { ApiRanking } from "@/types";
-import { IoShield, IoTrophy } from "react-icons/io5";
+import { IoTrophy, IoWarning, IoRemove, IoCheckmarkCircle } from "react-icons/io5";
+import Navbar from "@/components/Navbar";
 
 export default function RankingPage() {
   const [rankings, setRankings] = useState<ApiRanking[]>([]);
@@ -19,23 +20,13 @@ export default function RankingPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-          >
-            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-              <IoShield className="w-5 h-5 text-black" />
-            </div>
-            Cláusula Oculta
-          </Link>
+      <Navbar
+        rightAction={
           <Link href="/analyze" className="btn btn-primary btn-sm">
             Analisar Documento
           </Link>
-        </div>
-      </nav>
+        }
+      />
 
       {/* Content */}
       <div className="pt-16">
@@ -51,12 +42,25 @@ export default function RankingPage() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-12">
-              <span className="loading loading-spinner loading-lg text-primary" />
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4 p-4 bg-base-200 rounded-xl animate-pulse">
+                  <div className="w-8 h-8 bg-base-300 rounded" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-base-300 rounded w-1/3" />
+                    <div className="h-3 bg-base-300 rounded w-1/4" />
+                  </div>
+                  <div className="h-6 w-16 bg-base-300 rounded-full" />
+                </div>
+              ))}
             </div>
           ) : rankings.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-base-content/50">Nenhuma empresa no ranking ainda.</p>
+              <IoTrophy className="text-6xl text-base-content/20 mx-auto mb-4" />
+              <p className="text-base-content/50 mb-4">Nenhuma empresa no ranking ainda.</p>
+              <Link href="/analyze" className="btn btn-primary">
+                Analisar um documento
+              </Link>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -67,33 +71,41 @@ export default function RankingPage() {
                     <th>Empresa</th>
                     <th>Nota Abusividade</th>
                     <th>Análises</th>
-                    <th>Última Análise</th>
+                    <th className="hidden md:table-cell">Última Análise</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {rankings.map((r, i) => (
-                    <tr key={r.id}>
-                      <td className="font-bold">{i + 1}</td>
-                      <td className="font-medium">{r.company_name}</td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            r.avg_abuse_score >= 7
-                              ? "badge-error"
-                              : r.avg_abuse_score >= 4
-                              ? "badge-warning"
-                              : "badge-success"
-                          }`}
-                        >
-                          {r.avg_abuse_score.toFixed(1)}/10
-                        </span>
-                      </td>
-                      <td>{r.total_analyses}</td>
-                      <td className="text-xs text-base-content/50">
-                        {new Date(r.last_analysis_at).toLocaleDateString("pt-BR")}
-                      </td>
-                    </tr>
-                  ))}
+                  {rankings.map((r, i) => {
+                    const isHigh = r.avg_abuse_score >= 7;
+                    const isMedium = r.avg_abuse_score >= 4 && r.avg_abuse_score < 7;
+                    const severityLabel = isHigh ? "Alto" : isMedium ? "Médio" : "Baixo";
+                    const SeverityIcon = isHigh ? IoWarning : isMedium ? IoRemove : IoCheckmarkCircle;
+
+                    return (
+                      <tr key={r.id}>
+                        <td className="font-bold">{i + 1}</td>
+                        <td className="font-medium break-words max-w-[200px]">{r.company_name}</td>
+                        <td>
+                          <span
+                            className={`badge gap-1 ${
+                              isHigh
+                                ? "badge-error"
+                                : isMedium
+                                ? "badge-warning"
+                                : "badge-success"
+                            }`}
+                          >
+                            <SeverityIcon className="text-xs" />
+                            {severityLabel}: {r.avg_abuse_score.toFixed(1)}/10
+                          </span>
+                        </td>
+                        <td>{r.total_analyses}</td>
+                        <td className="text-xs text-base-content/50 hidden md:table-cell">
+                          {new Date(r.last_analysis_at).toLocaleDateString("pt-BR")}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

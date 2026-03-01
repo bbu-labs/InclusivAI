@@ -8,15 +8,17 @@ import { apiListDocuments, apiDeleteDocument } from "@/lib/api";
 import type { ApiDocument } from "@/types";
 import { DOC_TYPE_LABELS, type DocType } from "@/types";
 import {
-  IoShield,
   IoDocumentText,
   IoTrash,
-  IoRefresh,
+  IoSearch,
 } from "react-icons/io5";
+import Navbar from "@/components/Navbar";
+import { useToast } from "@/components/Toast";
 
 export default function HistoryPage() {
   const router = useRouter();
   const { session, isLoading: authLoading } = useAuth();
+  const { showToast } = useToast();
   const [documents, setDocuments] = useState<ApiDocument[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,30 +40,21 @@ export default function HistoryPage() {
     try {
       await apiDeleteDocument(id);
       setDocuments((prev) => prev.filter((d) => d.id !== id));
+      showToast("Documento excluído", "success");
     } catch {
-      alert("Erro ao excluir documento");
+      showToast("Erro ao excluir documento", "error");
     }
   };
 
   return (
     <div className="min-h-screen bg-base-100">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-          >
-            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-              <IoShield className="w-5 h-5 text-black" />
-            </div>
-            Cláusula Oculta
-          </Link>
+      <Navbar
+        rightAction={
           <Link href="/analyze" className="btn btn-primary btn-sm">
             Nova Análise
           </Link>
-        </div>
-      </nav>
+        }
+      />
 
       {/* Content */}
       <div className="pt-16">
@@ -72,14 +65,25 @@ export default function HistoryPage() {
           </p>
 
           {loading ? (
-            <div className="flex justify-center py-12">
-              <span className="loading loading-spinner loading-lg text-primary" />
+            <div className="grid gap-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="card bg-base-200 flex-row items-center p-4 gap-4 animate-pulse">
+                  <div className="w-8 h-8 bg-base-300 rounded" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-base-300 rounded w-1/2" />
+                    <div className="h-3 bg-base-300 rounded w-1/4" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : documents.length === 0 ? (
             <div className="text-center py-12">
-              <IoDocumentText className="text-6xl text-base-content/20 mx-auto mb-4" />
-              <p className="text-base-content/50 mb-4">
-                Você ainda não analisou nenhum documento.
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <IoSearch className="text-4xl text-primary" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Nenhum documento ainda</h3>
+              <p className="text-base-content/50 mb-6 max-w-sm mx-auto">
+                Analise seu primeiro documento e ele aparecerá aqui.
               </p>
               <Link href="/analyze" className="btn btn-primary">
                 Analisar agora
@@ -108,7 +112,7 @@ export default function HistoryPage() {
                     <button
                       className="btn btn-ghost btn-sm btn-square text-error"
                       onClick={() => handleDelete(doc.id)}
-                      title="Excluir"
+                      aria-label="Excluir documento"
                     >
                       <IoTrash />
                     </button>

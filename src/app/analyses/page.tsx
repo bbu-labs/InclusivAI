@@ -14,12 +14,13 @@ import {
   type AnalysisType,
 } from "@/types";
 import {
-  IoShield,
   IoShieldCheckmark,
   IoWarning,
   IoAlert,
   IoDocumentText,
+  IoSearch,
 } from "react-icons/io5";
+import Navbar from "@/components/Navbar";
 
 function ScoreIndicator({ abuseScore }: { abuseScore: number | null }) {
   const score = computeProtectionScore(abuseScore);
@@ -68,23 +69,13 @@ export default function AnalysesPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-          >
-            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-              <IoShield className="w-5 h-5 text-black" />
-            </div>
-            Cláusula Oculta
-          </Link>
+      <Navbar
+        rightAction={
           <Link href="/analyze" className="btn btn-primary btn-sm">
             Nova Análise
           </Link>
-        </div>
-      </nav>
+        }
+      />
 
       {/* Content */}
       <div className="pt-16">
@@ -95,28 +86,41 @@ export default function AnalysesPage() {
           </p>
 
           {loading ? (
-            <div className="flex justify-center py-12">
-              <span className="loading loading-spinner loading-lg text-primary" />
+            <div className="grid gap-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="card bg-base-200 p-4 animate-pulse">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-base-300 rounded-xl" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-base-300 rounded w-2/3" />
+                      <div className="h-3 bg-base-300 rounded w-1/3" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : analyses.length === 0 ? (
             <div className="text-center py-12">
-              <IoDocumentText className="text-6xl text-base-content/20 mx-auto mb-4" />
-              <p className="text-base-content/50 mb-4">
-                Você ainda não fez nenhuma análise.
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <IoSearch className="text-4xl text-primary" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Nenhuma análise ainda</h3>
+              <p className="text-base-content/50 mb-6 max-w-sm mx-auto">
+                Analise seu primeiro documento e os resultados aparecerão aqui.
               </p>
               <Link href="/analyze" className="btn btn-primary">
-                Analisar agora
+                Analisar seu primeiro documento
               </Link>
             </div>
           ) : (
             <div className="grid gap-3">
               {analyses.map((item) => {
-                const protectionScore = computeProtectionScore(item.abuseScore);
                 return (
                   <button
                     key={item.id}
                     className="card bg-base-200 w-full text-left cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => router.push(`/analyses/${item.id}`)}
+                    aria-label={`Ver análise: ${item.documentTitle}`}
                   >
                     <div className="card-body p-4 flex-row items-center gap-4">
                       <ScoreIndicator abuseScore={item.abuseScore} />

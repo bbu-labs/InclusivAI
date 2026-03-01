@@ -7,10 +7,10 @@ import {
   IoWarning,
   IoBook,
   IoFlash,
-  IoShield,
 } from "react-icons/io5";
 import type { TosAnalysisSummary, Gravidade } from "@/types";
-import { getGravidadeBadge, getGravidadeLabel, getGravidadeColor } from "@/types";
+import { getGravidadeBadge, getGravidadeLabel } from "@/types";
+import Navbar from "@/components/Navbar";
 
 interface ClauseData {
   texto_original: string;
@@ -46,26 +46,17 @@ export default function ClauseDetailPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 border-b bg-base-100/95 backdrop-blur-md border-base-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <button
-            onClick={() => router.push("/")}
-            className="flex items-center gap-2 font-extrabold text-xl text-black hover:text-primary transition-colors"
-          >
-            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-              <IoShield className="w-5 h-5 text-black" />
-            </div>
-            Cláusula Oculta
-          </button>
+      <Navbar
+        rightAction={
           <button
             onClick={() => router.push("/results")}
-            className="px-4 py-2 bg-base-200 text-base-content font-semibold text-sm rounded-lg hover:bg-base-300 transition-colors"
+            className="btn btn-ghost btn-sm"
+            aria-label="Voltar aos resultados"
           >
             Voltar aos Resultados
           </button>
-        </div>
-      </nav>
+        }
+      />
 
       {/* Main Content */}
       <div className="pt-16">
