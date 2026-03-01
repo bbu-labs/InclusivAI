@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ExperienceProvider } from "@/contexts/ExperienceContext";
 import { AppProvider } from "@/contexts/AppContext";
 import Footer from "@/components/Footer";
+import OnboardingGuard from "@/components/OnboardingGuard";
 import { ToastProvider } from "@/components/Toast";
 import "./globals.css";
 
@@ -26,12 +28,16 @@ export default function RootLayout({
           Pular para conteúdo
         </a>
         <AuthProvider>
-          <AppProvider>
-            <ToastProvider>
-              <main id="main-content">{children}</main>
-              <Footer />
-            </ToastProvider>
-          </AppProvider>
+          <ExperienceProvider>
+            <AppProvider>
+              <ToastProvider>
+                <OnboardingGuard>
+                  <main id="main-content">{children}</main>
+                  <Footer />
+                </OnboardingGuard>
+              </ToastProvider>
+            </AppProvider>
+          </ExperienceProvider>
         </AuthProvider>
       </body>
     </html>

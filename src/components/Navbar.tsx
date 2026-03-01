@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IoShield, IoPersonCircle, IoLogOut, IoList, IoTrophy, IoSettings, IoArrowBack } from "react-icons/io5";
 import { useAuth } from "@/contexts/AuthContext";
+import { useExperience } from "@/contexts/ExperienceContext";
 
 interface NavbarProps {
   variant?: "transparent" | "solid";
@@ -32,6 +33,7 @@ export default function Navbar({
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
   const { session, user, logout } = useAuth();
+  const { profile: xp } = useExperience();
 
   useEffect(() => {
     if (variant !== "transparent") return;
@@ -152,28 +154,47 @@ export default function Navbar({
                     {user.email}
                   </span>
                 </li>
-                <li>
-                  <Link href="/analyses" className="gap-2">
-                    <IoList className="text-base" />
-                    Minhas Análises
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/ranking" className="gap-2">
-                    <IoTrophy className="text-base" />
-                    Ranking
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/settings" className="gap-2">
-                    <IoSettings className="text-base" />
-                    Configurações
-                  </Link>
-                </li>
+                {xp.simplifiedNav ? (
+                  <>
+                    <li>
+                      <Link href="/analyze" className="gap-2 py-3 text-base">
+                        <IoList className="text-lg" />
+                        Analisar
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/settings" className="gap-2 py-3 text-base">
+                        <IoSettings className="text-lg" />
+                        Configurações
+                      </Link>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <Link href="/analyses" className="gap-2">
+                        <IoList className="text-base" />
+                        Minhas Análises
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/ranking" className="gap-2">
+                        <IoTrophy className="text-base" />
+                        Ranking
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/settings" className="gap-2">
+                        <IoSettings className="text-base" />
+                        Configurações
+                      </Link>
+                    </li>
+                  </>
+                )}
                 <div className="divider my-1" />
                 <li>
-                  <button onClick={() => logout()} className="gap-2 text-error">
-                    <IoLogOut className="text-base" />
+                  <button onClick={() => logout()} className={`gap-2 text-error ${xp.simplifiedNav ? "py-3 text-base" : ""}`}>
+                    <IoLogOut className={xp.simplifiedNav ? "text-lg" : "text-base"} />
                     Sair
                   </button>
                 </li>

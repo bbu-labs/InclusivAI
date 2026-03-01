@@ -68,9 +68,18 @@ export default function SettingsPage() {
       <div className="pt-16">
         <div className="max-w-2xl mx-auto px-6 py-8">
           <h1 className="text-3xl font-extrabold mb-2">Configurações</h1>
-          <p className="text-base-content/60 mb-8">
+          <p className="text-base-content/60 mb-4">
             Personalize sua experiência
           </p>
+
+          {profile?.has_onboarded && (
+            <div className="alert alert-info mb-8">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Estas preferências foram definidas durante o onboarding. Altere a qualquer momento.</span>
+            </div>
+          )}
 
           <div className="space-y-6">
             {/* Preferred output */}
@@ -187,6 +196,23 @@ export default function SettingsPage() {
                   Salvar
                 </>
               )}
+            </button>
+
+            <div className="divider" />
+
+            <button
+              className="btn btn-outline btn-sm w-full"
+              onClick={async () => {
+                try {
+                  const { profile: updated } = await apiUpdateProfile({ has_onboarded: false } as never);
+                  setProfile(updated);
+                  router.push("/onboarding");
+                } catch {
+                  showToast("Erro ao reiniciar onboarding", "error");
+                }
+              }}
+            >
+              Refazer onboarding
             </button>
           </div>
         </div>

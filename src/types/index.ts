@@ -38,6 +38,7 @@ export interface ApiProfile {
   preferred_output: PreferredOutput;
   font_size: number;
   high_contrast: boolean;
+  has_onboarded: boolean;
   plan: UserPlan;
   analyses_this_month: number;
   month_reset_at: string;

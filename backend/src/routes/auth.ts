@@ -25,6 +25,7 @@ const profileUpdateSchema = z.object({
   preferred_output: z.enum(PREFERRED_OUTPUTS).optional(),
   font_size: z.number().min(12).max(32).optional(),
   high_contrast: z.boolean().optional(),
+  has_onboarded: z.boolean().optional(),
 });
 
 // POST /api/auth/signup

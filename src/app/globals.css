@@ -5,3 +5,57 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* ─── Experience Profile CSS Variables (defaults: adulto) ─── */
+:root {
+  --xp-font-base: 17px;
+  --xp-font-heading: 26px;
+  --xp-spacing: 1.125rem;
+  --xp-btn-height: 2.75rem;
+  --xp-icon-size: 1.375rem;
+  --xp-line-height: 1.6;
+  --xp-transition-speed: 200ms;
+  --xp-card-padding: 1.25rem;
+}
+
+body {
+  font-size: var(--xp-font-base);
+  line-height: var(--xp-line-height);
+}
+
+/* ─── High Contrast Mode ─── */
+[data-high-contrast="true"] {
+  --bc: 0 0% 20%; /* stronger borders */
+}
+
+[data-high-contrast="true"] .text-base-content\/60,
+[data-high-contrast="true"] .text-base-content\/70,
+[data-high-contrast="true"] .opacity-60,
+[data-high-contrast="true"] .opacity-70 {
+  opacity: 1;
+}
+
+[data-high-contrast="true"] .border-base-300 {
+  border-color: hsl(0 0% 30%);
+}
+
+/* ─── Experience Utility Classes ─── */
+.xp-card {
+  padding: var(--xp-card-padding);
+  transition: all var(--xp-transition-speed) ease;
+}
+
+.xp-btn {
+  min-height: var(--xp-btn-height);
+  transition: all var(--xp-transition-speed) ease;
+}
+
+.xp-heading {
+  font-size: var(--xp-font-heading);
+  line-height: 1.2;
+}
+
+.xp-icon {
+  width: var(--xp-icon-size);
+  height: var(--xp-icon-size);
+}

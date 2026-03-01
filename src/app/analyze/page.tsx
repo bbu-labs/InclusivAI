@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useExperience } from "@/contexts/ExperienceContext";
 import StepIndicator from "@/components/StepIndicator";
 import {
   IoLink,
@@ -44,6 +45,7 @@ export default function AnalyzePage() {
   const router = useRouter();
   const { setRawInput, setInputMethod, reset } = useApp();
   const { session } = useAuth();
+  const { profile: xp } = useExperience();
   const [selectedMode, setSelectedMode] = useState<AnalysisMode | null>(null);
 
   // URL state
@@ -185,6 +187,15 @@ export default function AnalyzePage() {
                 Escolha como enviar seu documento. Nossa IA fará o resto.
               </p>
             </div>
+
+            {xp.showGuidanceText && (
+              <div className="alert alert-info mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Dica: Escolha uma das opções abaixo. Se você tem um documento em papel, use &quot;Tirar Foto&quot;.</span>
+              </div>
+            )}
 
             {/* Mode Selection Cards */}
             <div className="grid md:grid-cols-3 gap-4 mb-8">

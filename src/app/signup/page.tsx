@@ -45,7 +45,7 @@ export default function SignupPage() {
           // Profile may not be ready immediately
         }
 
-        router.push("/analyze");
+        router.push("/onboarding");
       } else {
         // Email verification required
         setEmailSent(true);

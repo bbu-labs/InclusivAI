@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useExperience } from "@/contexts/ExperienceContext";
 import StepIndicator from "@/components/StepIndicator";
 import { IoDocumentText, IoCheckmark, IoClose } from "react-icons/io5";
 import { DOC_TYPE_LABELS, type DocType } from "@/types";
@@ -15,6 +16,7 @@ export default function ConfirmationPage() {
   const router = useRouter();
   const { state } = useApp();
   const { session } = useAuth();
+  const { profile: xp } = useExperience();
 
   useEffect(() => {
     if (!session) {
@@ -77,6 +79,15 @@ export default function ConfirmationPage() {
                 A confirmação ajuda a IA a fazer uma análise mais precisa.
               </p>
             </div>
+
+            {xp.showGuidanceText && (
+              <div className="alert alert-info mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Dica: Se não tem certeza, clique &quot;Não, voltar&quot;. Nada será perdido.</span>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="grid md:grid-cols-2 gap-4">
