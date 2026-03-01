@@ -89,7 +89,13 @@ export type QAResult = {
   source_excerpt: string | null;
 };
 
-export function askQuestion(
+const FALLBACK_ANSWERS: Record<SupportedCountry, string> = {
+  BR: "Não consegui processar sua pergunta no momento. Por favor, tente novamente em instantes.",
+  US: "I was unable to process your question at this time. Please try again in a moment.",
+  FR: "Je n'ai pas pu traiter votre question pour le moment. Veuillez réessayer dans un instant.",
+};
+
+export async function askQuestion(
   question: string,
   documentText: string,
   analysisSummary: string,
@@ -102,7 +108,7 @@ export function askQuestion(
   const systemPrompt = buildQAPrompt(country);
   const userMessage = buildQAUserMessage(question, truncatedDoc, truncatedSummary, country);
 
-  return runAgent<QAResult>(MINISTRAL_8B, () =>
+  const result = await runAgent<QAResult>(MINISTRAL_8B, () =>
     mistralClient.chatJSON<QAResult>(
       MINISTRAL_8B,
       [
@@ -112,4 +118,15 @@ export function askQuestion(
       OUTPUT_TOKEN_LIMIT
     )
   );
+
+  if (!result.success || !result.data?.answer) {
+    console.error("[QA agent] Mistral failed:", result.error);
+    return {
+      ...result,
+      success: true,
+      data: { answer: FALLBACK_ANSWERS[country], source_excerpt: null },
+    };
+  }
+
+  return result;
 }

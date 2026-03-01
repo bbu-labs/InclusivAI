@@ -262,10 +262,19 @@ analyze.post(
     const summaryStr = JSON.stringify(analysis.summary);
 
     const mistralClient = createMistralClient(c.env.MISTRAL_API_KEY);
-    const result = await askQuestion(question, documentText, summaryStr, mistralClient, userCountry);
+
+    let result;
+    try {
+      result = await askQuestion(question, documentText, summaryStr, mistralClient, userCountry);
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      console.error("[QA] Unexpected error for analysis", analysisId, ":", detail);
+      return c.json({ error: "QA_FAILED", detail }, 502);
+    }
 
     if (!result.success || !result.data) {
-      return c.json({ error: "QA_FAILED" }, 502);
+      console.error("[QA] Agent failed for analysis", analysisId, ":", result.error);
+      return c.json({ error: "QA_FAILED", detail: result.error }, 502);
     }
 
     // Save to questions table
