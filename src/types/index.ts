@@ -11,7 +11,7 @@ export type DocType =
   | "outro";
 
 export type SourceType = "text_input" | "pdf_upload" | "image_upload" | "url_import";
-export type AnalysisType = "tos" | "scam" | "general";
+export type AnalysisType = "tos" | "scam" | "general" | "auto";
 export type SimplificationLevel = "fundamental" | "medio" | "tecnico";
 export type PreferredOutput = "text" | "audio" | "both";
 export type AgeRange = "18-24" | "25-34" | "35-44" | "45-54" | "55-64" | "65+";
@@ -58,7 +58,8 @@ export interface TosAnalysisSummary {
   clausulas_abusivas: Array<{
     texto_original: string;
     explicacao_simples: string;
-    artigo_cdc: string;
+    base_legal: string;
+    artigo_cdc?: string;
     gravidade: "alta" | "media" | "baixa";
   }>;
   pontos_positivos: string[];
@@ -176,6 +177,7 @@ export const ANALYSIS_TYPE_LABELS: Record<AnalysisType, string> = {
   tos: "Termos de Uso",
   scam: "Detecção de Golpe",
   general: "Análise Geral",
+  auto: "Análise Automática",
 };
 
 // ─── UI helper type ───

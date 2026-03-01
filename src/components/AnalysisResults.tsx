@@ -105,9 +105,9 @@ export function TosResult({
                     >
                       {getGravidadeLabel(clause.gravidade)}
                     </span>
-                    {clause.artigo_cdc && (
+                    {(clause.base_legal || clause.artigo_cdc) && (
                       <span className="text-xs text-base-content/50">
-                        {clause.artigo_cdc}
+                        {clause.base_legal || clause.artigo_cdc}
                       </span>
                     )}
                   </div>

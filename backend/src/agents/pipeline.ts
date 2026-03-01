@@ -3,6 +3,8 @@ import type { MistralClient } from "../services/mistral";
 import type { AnalysisType, SimplificationLevel, SourceType } from "../types";
 import { readFromText, readFromImage, readFromPdf, type StructuredDocument } from "./reader";
 import { simplifyDocument, type SimplifierResult } from "./simplifier";
+import { triageDocument } from "./legal-triage";
+import type { LegalContext } from "../prompts/legal-triage";
 
 // Cost per million tokens (USD) — Mistral pricing
 const COST_RATES: Record<string, { input: number; output: number }> = {
@@ -133,12 +135,29 @@ export async function analyzeDocument(
       .eq("id", input.documentId);
   }
 
+  // Step 2: Legal Triage (skip for scam — straightforward classification)
+  let legalContext: LegalContext | undefined;
+  let effectiveAnalysisType: AnalysisType = input.analysisType;
+
+  if (input.analysisType !== "scam") {
+    const triage = await triageDocument(structuredText, mistralClient);
+    if (triage.success && triage.data) {
+      legalContext = triage.data;
+      effectiveAnalysisType = triage.data.analysis_type_override;
+      totalTokensIn += triage.tokensInput;
+      totalTokensOut += triage.tokensOutput;
+      totalCost += estimateCost(triage.modelUsed, triage.tokensInput, triage.tokensOutput);
+    }
+    // If triage fails → graceful degradation, use frontend-provided type
+  }
+
   // Step 3: Simplifier Agent → summary + abuse_score
   const simplifierResult = await simplifyDocument(
     structuredText,
-    input.analysisType,
+    effectiveAnalysisType,
     input.simplificationLevel,
-    mistralClient
+    mistralClient,
+    legalContext
   );
 
   if (!simplifierResult.success || !simplifierResult.data) {
@@ -151,7 +170,7 @@ export async function analyzeDocument(
 
   // Extract abuse score (only for ToS analysis)
   const abuseScore =
-    input.analysisType === "tos" && "abusividade" in simplifierResult.data
+    effectiveAnalysisType === "tos" && "abusividade" in simplifierResult.data
       ? (simplifierResult.data as { abusividade: number }).abusividade
       : null;
 
@@ -161,7 +180,7 @@ export async function analyzeDocument(
     .insert({
       document_id: input.documentId,
       user_id: input.userId,
-      analysis_type: input.analysisType,
+      analysis_type: effectiveAnalysisType,
       simplification_level: input.simplificationLevel,
       abuse_score: abuseScore,
       summary: simplifierResult.data,
@@ -187,7 +206,7 @@ export async function analyzeDocument(
   }
 
   // Step 6: Upsert company ranking (ToS analyses only)
-  if (input.analysisType === "tos" && abuseScore !== null && structuredDoc?.orgao_emissor) {
+  if (effectiveAnalysisType === "tos" && abuseScore !== null && structuredDoc?.orgao_emissor) {
     const companyName = structuredDoc.orgao_emissor;
 
     // Extract top issues from abusive clauses

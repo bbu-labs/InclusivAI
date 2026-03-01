@@ -51,21 +51,9 @@ export default function ResultsPage() {
 
     const runAnalysis = async () => {
       try {
-        // Determine analysis type based on doc_type
-        const docType = state.document?.doc_type;
-        let analysisType: "tos" | "scam" | "general" = "tos";
-        if (docType === "mensagem_suspeita") {
-          analysisType = "scam";
-        } else if (
-          docType === "notificacao_judicial" ||
-          docType === "carta_inss"
-        ) {
-          analysisType = "general";
-        }
-
         const { analysis: pipelineResult } = await apiRunAnalysis(
           state.documentId!,
-          analysisType
+          "auto"
         );
 
         const protectionScore = computeProtectionScore(

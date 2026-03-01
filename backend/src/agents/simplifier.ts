@@ -5,9 +5,10 @@ import { GENERAL_SIMPLIFIER_SYSTEM_PROMPT, GENERAL_SIMPLIFIER_USER_PROMPT } from
 import { MISTRAL_LARGE, type MistralClient } from "../services/mistral";
 import { truncateToTokens } from "../lib/token-utils";
 import type { AnalysisType, SimplificationLevel } from "../types";
+import type { LegalContext } from "../prompts/legal-triage";
 
 const INPUT_TOKEN_LIMIT = 8000;
-const OUTPUT_TOKEN_LIMIT = 2048;
+const OUTPUT_TOKEN_LIMIT = 4096;
 
 export type TosAnalysisResult = {
   abusividade: number;
@@ -15,7 +16,7 @@ export type TosAnalysisResult = {
   clausulas_abusivas: Array<{
     texto_original: string;
     explicacao_simples: string;
-    artigo_cdc: string;
+    base_legal: string;
     gravidade: "alta" | "media" | "baixa";
   }>;
   pontos_positivos: string[];
@@ -64,14 +65,15 @@ export type SimplifierResult = TosAnalysisResult | ScamDetectionResult | General
 function getPrompts(
   analysisType: AnalysisType,
   level: SimplificationLevel,
-  documentText: string
+  documentText: string,
+  legalContext?: LegalContext
 ): { system: string; user: string } {
   const truncated = truncateToTokens(documentText, INPUT_TOKEN_LIMIT);
 
   switch (analysisType) {
     case "tos":
       return {
-        system: TOS_ANALYSIS_SYSTEM_PROMPT(level),
+        system: TOS_ANALYSIS_SYSTEM_PROMPT(level, legalContext),
         user: TOS_ANALYSIS_USER_PROMPT(truncated),
       };
     case "scam":
@@ -81,7 +83,7 @@ function getPrompts(
       };
     case "general":
       return {
-        system: GENERAL_SIMPLIFIER_SYSTEM_PROMPT(level),
+        system: GENERAL_SIMPLIFIER_SYSTEM_PROMPT(level, legalContext),
         user: GENERAL_SIMPLIFIER_USER_PROMPT(truncated),
       };
   }
@@ -91,9 +93,10 @@ export function simplifyDocument(
   documentText: string,
   analysisType: AnalysisType,
   simplificationLevel: SimplificationLevel,
-  mistralClient: MistralClient
+  mistralClient: MistralClient,
+  legalContext?: LegalContext
 ): Promise<AgentResult<SimplifierResult>> {
-  const { system, user } = getPrompts(analysisType, simplificationLevel, documentText);
+  const { system, user } = getPrompts(analysisType, simplificationLevel, documentText, legalContext);
 
   return runAgent<SimplifierResult>(MISTRAL_LARGE, () =>
     mistralClient.chatJSON<SimplifierResult>(

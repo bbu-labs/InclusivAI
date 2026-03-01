@@ -15,7 +15,8 @@ import Navbar from "@/components/Navbar";
 interface ClauseData {
   texto_original: string;
   explicacao_simples: string;
-  artigo_cdc: string;
+  base_legal: string;
+  artigo_cdc?: string;
   gravidade: Gravidade;
 }
 
@@ -58,9 +59,9 @@ export default function ClauseDetailPage() {
                 <span className={`badge ${getGravidadeBadge(clause.gravidade)} badge-lg`}>
                   Gravidade {getGravidadeLabel(clause.gravidade)}
                 </span>
-                {clause.artigo_cdc && (
+                {(clause.base_legal || clause.artigo_cdc) && (
                   <span className="badge badge-outline badge-lg">
-                    {clause.artigo_cdc}
+                    {clause.base_legal || clause.artigo_cdc}
                   </span>
                 )}
               </div>
@@ -97,14 +98,14 @@ export default function ClauseDetailPage() {
               </div>
 
               {/* CDC Reference */}
-              {clause.artigo_cdc && (
+              {(clause.base_legal || clause.artigo_cdc) && (
                 <div className="bg-warning/5 border border-warning/20 rounded-2xl p-6">
                   <h3 className="font-bold text-lg text-warning mb-3 flex items-center gap-2">
                     <IoWarning className="text-xl" />
                     Referência Legal
                   </h3>
                   <p className="text-base text-base-content/70">
-                    {clause.artigo_cdc}
+                    {clause.base_legal || clause.artigo_cdc}
                   </p>
                 </div>
               )}

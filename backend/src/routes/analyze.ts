@@ -14,7 +14,7 @@ const analyze = new Hono<AppEnv>();
 analyze.use("*", requireAuth);
 
 const analyzeSchema = z.object({
-  analysis_type: z.enum(ANALYSIS_TYPES).default("tos"),
+  analysis_type: z.enum([...ANALYSIS_TYPES, "auto"]).default("auto"),
   simplification_level: z.enum(SIMPLIFICATION_LEVELS).default("medio"),
 });
 
@@ -84,7 +84,7 @@ analyze.post(
         userId: user.id,
         documentId,
         simplificationLevel: simplification_level,
-        analysisType: analysis_type,
+        analysisType: analysis_type === "auto" ? "general" : analysis_type,
       },
       mistralClient,
       supabaseAdmin

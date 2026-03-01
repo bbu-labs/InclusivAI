@@ -44,7 +44,7 @@ Qualquer reclamação relacionada a estes Termos será resolvida exclusivamente 
           "você concede a nós uma licença não exclusiva, isenta de royalties, transferível, sublicenciável e válida mundialmente para hospedar, usar, distribuir, modificar, executar, copiar, exibir ou apresentar publicamente, traduzir e criar trabalhos derivados do seu conteúdo",
         explicacao_simples:
           "O Instagram pode usar qualquer foto, vídeo ou texto que você postar da forma que quiser, sem te pagar nada, e ainda pode passar esse direito para outras empresas.",
-        artigo_cdc: "Art. 51, IV do CDC — cláusulas que estabeleçam obrigações iníquas ou abusivas",
+        base_legal: "Art. 51, IV do CDC — cláusulas que estabeleçam obrigações iníquas ou abusivas",
         gravidade: "alta",
       },
       {
@@ -52,7 +52,7 @@ Qualquer reclamação relacionada a estes Termos será resolvida exclusivamente 
           "Coletamos informações sobre suas atividades dentro e fora de nossos Produtos",
         explicacao_simples:
           "O Instagram rastreia o que você faz não só dentro do app, mas também em outros sites e aplicativos, o que viola o princípio de minimização de dados da LGPD.",
-        artigo_cdc: "Art. 6º, III da LGPD — princípio da necessidade",
+        base_legal: "Art. 6º, III da LGPD — princípio da necessidade",
         gravidade: "alta",
       },
       {
@@ -60,7 +60,7 @@ Qualquer reclamação relacionada a estes Termos será resolvida exclusivamente 
           "O INSTAGRAM NÃO SERÁ RESPONSÁVEL POR QUALQUER DANO INDIRETO, INCIDENTAL, ESPECIAL",
         explicacao_simples:
           "O Instagram tenta se isentar de responsabilidade por danos que você possa sofrer usando o serviço. No Brasil, isso é considerado cláusula abusiva.",
-        artigo_cdc: "Art. 51, I do CDC — impossibilitem, exonerem ou atenuem a responsabilidade do fornecedor",
+        base_legal: "Art. 51, I do CDC — impossibilitem, exonerem ou atenuem a responsabilidade do fornecedor",
         gravidade: "media",
       },
       {
@@ -68,7 +68,7 @@ Qualquer reclamação relacionada a estes Termos será resolvida exclusivamente 
           "Qualquer reclamação será resolvida exclusivamente nos tribunais do Distrito do Norte da Califórnia, EUA",
         explicacao_simples:
           "Se você tiver problema com o Instagram, teria que processar nos EUA. Isso é ilegal no Brasil — você sempre pode processar no seu domicílio.",
-        artigo_cdc: "Art. 51, VII do CDC — foro de eleição que dificulte a defesa do consumidor",
+        base_legal: "Art. 51, VII do CDC — foro de eleição que dificulte a defesa do consumidor",
         gravidade: "alta",
       },
     ],
@@ -111,21 +111,21 @@ Todas as disputas serão resolvidas por arbitragem vinculante, renunciando ao di
         texto_original: "A Uber não presta serviço de transporte",
         explicacao_simples:
           "A Uber tenta dizer que não é responsável pelo transporte, mas no Brasil a justiça já entendeu que ela é sim fornecedora de serviço de transporte.",
-        artigo_cdc: "Art. 14 do CDC — responsabilidade objetiva do fornecedor",
+        base_legal: "Art. 14 do CDC — responsabilidade objetiva do fornecedor",
         gravidade: "alta",
       },
       {
         texto_original: "O valor da taxa é determinado pela Uber a seu exclusivo critério",
         explicacao_simples:
           "A Uber pode cobrar o valor que quiser pelo cancelamento, sem critérios claros. Isso é considerado vantagem excessiva.",
-        artigo_cdc: "Art. 51, IV do CDC — vantagem excessiva ao fornecedor",
+        base_legal: "Art. 51, IV do CDC — vantagem excessiva ao fornecedor",
         gravidade: "media",
       },
       {
         texto_original: "renunciando ao direito de participar de ações coletivas",
         explicacao_simples:
           "Você não pode renunciar ao direito de entrar com ação coletiva. Isso é um direito irrenunciável no Brasil.",
-        artigo_cdc: "Art. 51, VII do CDC — cláusula que dificulte a defesa do consumidor",
+        base_legal: "Art. 51, VII do CDC — cláusula que dificulte a defesa do consumidor",
         gravidade: "alta",
       },
     ],
@@ -163,21 +163,21 @@ export const TOS_IFOOD = {
         texto_original: "O iFood não garante a qualidade dos alimentos preparados pelos restaurantes parceiros",
         explicacao_simples:
           "O iFood tenta se isentar de responsabilidade pela comida, mas como intermediador, tem responsabilidade solidária pela qualidade.",
-        artigo_cdc: "Art. 18 do CDC — responsabilidade solidária por vício do produto",
+        base_legal: "Art. 18 do CDC — responsabilidade solidária por vício do produto",
         gravidade: "media",
       },
       {
         texto_original: "Após o preparo, não há reembolso",
         explicacao_simples:
           "Negar reembolso após o preparo é abusivo se o produto chegou com defeito ou diferente do anunciado.",
-        artigo_cdc: "Art. 49 do CDC — direito de arrependimento",
+        base_legal: "Art. 49 do CDC — direito de arrependimento",
         gravidade: "media",
       },
       {
         texto_original: "alterar, suspender ou encerrar o programa de pontos a qualquer momento, sem aviso prévio",
         explicacao_simples:
           "Alterar regras sem aviso prévio pode prejudicar consumidores que acumularam pontos.",
-        artigo_cdc: "Art. 51, XIII do CDC — modificação unilateral do contrato",
+        base_legal: "Art. 51, XIII do CDC — modificação unilateral do contrato",
         gravidade: "baixa",
       },
     ],
@@ -216,7 +216,7 @@ export const TOS_NUBANK = {
         texto_original: "O Nubank pode encerrar a conta a qualquer momento, mediante aviso prévio de 30 dias, sem necessidade de justificativa",
         explicacao_simples:
           "O banco pode fechar sua conta sem explicar o motivo. Embora dê 30 dias de aviso, a falta de justificativa pode ser questionável.",
-        artigo_cdc: "Art. 51, XI do CDC — autorizar o fornecedor a cancelar o contrato unilateralmente",
+        base_legal: "Art. 51, XI do CDC — autorizar o fornecedor a cancelar o contrato unilateralmente",
         gravidade: "media",
       },
     ],
@@ -257,28 +257,28 @@ export const TOS_SHEIN = {
         texto_original: "O frete de devolução internacional é por conta do consumidor",
         explicacao_simples:
           "Se o produto veio com defeito, quem vende é que tem que pagar a devolução. Cobrar frete internacional de devolução do consumidor é abusivo.",
-        artigo_cdc: "Art. 18, § 1º do CDC — responsabilidade do fornecedor por vícios",
+        base_legal: "Art. 18, § 1º do CDC — responsabilidade do fornecedor por vícios",
         gravidade: "alta",
       },
       {
         texto_original: "A Shein não garante conformidade exata com as imagens",
         explicacao_simples:
           "Se o produto é diferente da foto, é propaganda enganosa. Você tem direito de devolver e receber o dinheiro de volta.",
-        artigo_cdc: "Art. 37 do CDC — publicidade enganosa",
+        base_legal: "Art. 37 do CDC — publicidade enganosa",
         gravidade: "alta",
       },
       {
         texto_original: "você autoriza o compartilhamento de seus dados com empresas do grupo Shein em qualquer país, independente da legislação local",
         explicacao_simples:
           "Seus dados pessoais podem ser enviados para qualquer país sem proteção. Isso viola a LGPD que exige garantias para transferência internacional.",
-        artigo_cdc: "Art. 33 da LGPD — transferência internacional de dados",
+        base_legal: "Art. 33 da LGPD — transferência internacional de dados",
         gravidade: "alta",
       },
       {
         texto_original: "disputas serão regidas pelas leis de Hong Kong",
         explicacao_simples:
           "Se vende para brasileiros, tem que respeitar a lei brasileira. Escolher a lei de Hong Kong é abusivo.",
-        artigo_cdc: "Art. 51, VII do CDC — foro de eleição abusivo",
+        base_legal: "Art. 51, VII do CDC — foro de eleição abusivo",
         gravidade: "alta",
       },
     ],
