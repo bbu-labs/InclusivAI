@@ -179,12 +179,14 @@ export default function Navbar({
                         {t("navbar.myAnalyses")}
                       </Link>
                     </li>
+                    {/* Ranking hidden — feature in progress
                     <li>
                       <Link href="/ranking" className="gap-2">
                         <IoTrophy className="text-base" />
                         {t("navbar.ranking")}
                       </Link>
                     </li>
+                    */}
                     <li>
                       <Link href="/settings" className="gap-2">
                         <IoSettings className="text-base" />
