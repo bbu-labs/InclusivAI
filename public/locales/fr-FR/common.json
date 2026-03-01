@@ -150,6 +150,9 @@
       "seniorTip2": "Vous pouvez toujours modifier les paramètres plus tard",
       "seniorTip3": "Si vous avez besoin d'aide, interrogez l'IA sur le document",
       "finish": "Commencer l'analyse"
+    },
+    "errors": {
+      "updateFailed": "Impossible de sauvegarder vos préférences. Veuillez réessayer."
     }
   },
   "analyze": {

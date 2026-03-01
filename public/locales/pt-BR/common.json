@@ -150,6 +150,9 @@
       "seniorTip2": "Pode sempre mudar as configurações depois",
       "seniorTip3": "Se precisar de ajuda, pergunte à IA sobre o documento",
       "finish": "Começar a analisar"
+    },
+    "errors": {
+      "updateFailed": "Não foi possível salvar suas preferências. Tente novamente."
     }
   },
   "analyze": {
