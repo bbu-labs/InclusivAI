@@ -8,7 +8,7 @@
     "build": "npx remotion render src/index.ts PitchVideo out/pitch.mp4 --codec h264"
   },
   "dependencies": {
-    "@remotion/cli": "4.0.242",
+    "@remotion/cli": "4.0.431",
     "@remotion/google-fonts": "4.0.242",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
