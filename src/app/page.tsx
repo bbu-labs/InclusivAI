@@ -627,7 +627,7 @@ export default function Home() {
               transition={{ delay: 2 * 0.1 }}
               className="text-center"
             >
-              <div className="text-4xl md:text-5xl font-extrabold mb-2">3</div>
+              <div className="text-4xl md:text-5xl font-extrabold mb-2">5</div>
               <p className="text-sm text-white/70">{t("landing.statMethods")}</p>
             </motion.div>
             <motion.div
