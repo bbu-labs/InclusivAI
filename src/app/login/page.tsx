@@ -51,7 +51,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-base-100 flex flex-col">
-      <Navbar />
+      <Navbar hideUserMenu />
 
       {/* Login Form */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">

@@ -62,7 +62,7 @@ export default function SignupPage() {
   if (emailSent) {
     return (
       <div className="min-h-screen bg-base-100 flex flex-col">
-        <Navbar />
+        <Navbar hideUserMenu />
 
         <div className="flex-1 flex items-center justify-center px-6 py-12">
           <div className="w-full max-w-md text-center">
@@ -85,7 +85,7 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-base-100 flex flex-col">
-      <Navbar />
+      <Navbar hideUserMenu />
 
       {/* Signup Form */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">

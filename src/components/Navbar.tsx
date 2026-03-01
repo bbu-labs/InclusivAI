@@ -2,22 +2,36 @@
 
 import { useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
-import { IoShield } from "react-icons/io5";
+import { usePathname } from "next/navigation";
+import { IoShield, IoPersonCircle, IoLogOut, IoList, IoTrophy, IoSettings, IoArrowBack } from "react-icons/io5";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NavbarProps {
   variant?: "transparent" | "solid";
-  rightAction?: ReactNode;
   showNav?: boolean;
   navLinks?: { label: string; href: string }[];
+  backHref?: string;
+  backLabel?: string;
+  pageAction?: ReactNode;
+  statusText?: string;
+  hideUserMenu?: boolean;
 }
+
+const NO_AUTO_CTA_PATHS = ["/analyze", "/processing", "/confirmation", "/results"];
 
 export default function Navbar({
   variant = "solid",
-  rightAction,
   showNav = false,
   navLinks,
+  backHref,
+  backLabel = "Voltar",
+  pageAction,
+  statusText,
+  hideUserMenu = false,
 }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const pathname = usePathname();
+  const { session, user, logout } = useAuth();
 
   useEffect(() => {
     if (variant !== "transparent") return;
@@ -31,6 +45,12 @@ export default function Navbar({
   }, [variant]);
 
   const isTransparent = variant === "transparent" && !isScrolled;
+
+  const showAutoCta =
+    session &&
+    !statusText &&
+    !pageAction &&
+    !NO_AUTO_CTA_PATHS.includes(pathname);
 
   return (
     <nav
@@ -64,7 +84,7 @@ export default function Navbar({
           Cláusula Oculta
         </Link>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           {showNav && navLinks && (
             <div
               className={`hidden md:flex items-center gap-6 text-sm font-medium transition-colors ${
@@ -86,7 +106,89 @@ export default function Navbar({
               ))}
             </div>
           )}
-          {rightAction}
+
+          {statusText && (
+            <span className="text-sm text-base-content/60">{statusText}</span>
+          )}
+
+          {backHref && (
+            <Link
+              href={backHref}
+              className={`btn btn-ghost btn-sm gap-1 ${
+                isTransparent ? "text-white hover:bg-white/10" : ""
+              }`}
+            >
+              <IoArrowBack className="text-sm" />
+              {backLabel}
+            </Link>
+          )}
+
+          {pageAction}
+
+          {showAutoCta && (
+            <Link href="/analyze" className="btn btn-primary btn-sm">
+              Analisar
+            </Link>
+          )}
+
+          {!hideUserMenu && session && user ? (
+            <div className="dropdown dropdown-end">
+              <div
+                tabIndex={0}
+                role="button"
+                className={`btn btn-ghost btn-circle ${
+                  isTransparent ? "text-white hover:bg-white/10" : ""
+                }`}
+                aria-label="Menu do usuário"
+              >
+                <IoPersonCircle className="w-6 h-6" />
+              </div>
+              <ul
+                tabIndex={0}
+                className="dropdown-content menu bg-base-100 rounded-box z-[1] w-64 p-2 shadow-lg border border-base-200 mt-2"
+              >
+                <li className="menu-title px-4 py-2">
+                  <span className="text-xs text-base-content/50 truncate">
+                    {user.email}
+                  </span>
+                </li>
+                <li>
+                  <Link href="/analyses" className="gap-2">
+                    <IoList className="text-base" />
+                    Minhas Análises
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/ranking" className="gap-2">
+                    <IoTrophy className="text-base" />
+                    Ranking
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/settings" className="gap-2">
+                    <IoSettings className="text-base" />
+                    Configurações
+                  </Link>
+                </li>
+                <div className="divider my-1" />
+                <li>
+                  <button onClick={() => logout()} className="gap-2 text-error">
+                    <IoLogOut className="text-base" />
+                    Sair
+                  </button>
+                </li>
+              </ul>
+            </div>
+          ) : !hideUserMenu && !session ? (
+            <Link
+              href="/login"
+              className={`btn btn-ghost btn-sm ${
+                isTransparent ? "text-white hover:bg-white/10" : ""
+              }`}
+            >
+              Entrar
+            </Link>
+          ) : null}
         </div>
       </div>
     </nav>

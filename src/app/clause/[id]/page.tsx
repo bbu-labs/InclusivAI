@@ -46,17 +46,7 @@ export default function ClauseDetailPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      <Navbar
-        rightAction={
-          <button
-            onClick={() => router.push("/results")}
-            className="btn btn-ghost btn-sm"
-            aria-label="Voltar aos resultados"
-          >
-            Voltar aos Resultados
-          </button>
-        }
-      />
+      <Navbar backHref="/results" backLabel="Voltar aos Resultados" />
 
       {/* Main Content */}
       <div className="pt-16">

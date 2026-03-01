@@ -1,9 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useApp } from "@/contexts/AppContext";
-import { useAuth } from "@/contexts/AuthContext";
 import {
   IoLink,
   IoCamera,
@@ -28,7 +26,6 @@ import Navbar from "@/components/Navbar";
 export default function Home() {
   const router = useRouter();
   const { reset } = useApp();
-  const { session, user, logout } = useAuth();
 
   const handleSelect = () => {
     reset();
@@ -68,48 +65,6 @@ export default function Home() {
     },
   ];
 
-  const navRight = session ? (
-    <div className="flex items-center gap-3">
-      <Link
-        href="/analyses"
-        className="hidden md:block text-sm font-medium text-inherit opacity-80 hover:opacity-100 transition-opacity"
-      >
-        Minhas Análises
-      </Link>
-      <span className="hidden md:block text-xs opacity-60">
-        {user?.email}
-      </span>
-      <button
-        onClick={() => logout()}
-        className="text-sm font-medium opacity-80 hover:opacity-100 transition-opacity"
-        aria-label="Sair da conta"
-      >
-        Sair
-      </button>
-      <button
-        onClick={handleSelect}
-        className="px-5 py-2 bg-secondary text-secondary-foreground font-semibold text-sm rounded-lg hover:opacity-90 transition-opacity"
-      >
-        Analisar
-      </button>
-    </div>
-  ) : (
-    <div className="flex items-center gap-3">
-      <Link
-        href="/login"
-        className="text-sm font-medium opacity-80 hover:opacity-100 transition-opacity"
-      >
-        Entrar
-      </Link>
-      <button
-        onClick={handleSelect}
-        className="px-5 py-2 bg-secondary text-secondary-foreground font-semibold text-sm rounded-lg hover:opacity-90 transition-opacity"
-      >
-        Analisar
-      </button>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-base-100">
       <Navbar
@@ -118,9 +73,7 @@ export default function Home() {
         navLinks={[
           { label: "Como Funciona", href: "#how-it-works" },
           { label: "Pra quem é", href: "#profiles" },
-          { label: "Ranking", href: "/ranking" },
         ]}
-        rightAction={navRight}
       />
 
       {/* ───── Hero ───── */}

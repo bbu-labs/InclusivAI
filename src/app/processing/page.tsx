@@ -117,11 +117,7 @@ export default function ProcessingPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      <Navbar
-        rightAction={
-          <span className="text-sm text-base-content/60">Processando...</span>
-        }
-      />
+      <Navbar statusText="Processando..." hideUserMenu />
 
       {/* Main Content */}
       <div className="pt-16">

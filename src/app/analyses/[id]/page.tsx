@@ -13,7 +13,6 @@ import {
   buildAudioText,
 } from "@/components/AnalysisResults";
 import {
-  IoArrowBack,
   IoShareSocial,
   IoImage,
   IoAlert,
@@ -107,7 +106,7 @@ export default function AnalysisDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-base-100">
-        <Navbar />
+        <Navbar backHref="/analyses" backLabel="Voltar" />
         <div className="pt-16">
           <div className="max-w-3xl mx-auto px-6 py-8">
             <div className="space-y-6 animate-pulse">
@@ -125,7 +124,7 @@ export default function AnalysisDetailPage() {
   if (error || !analysis) {
     return (
       <div className="min-h-screen bg-base-100">
-        <Navbar />
+        <Navbar backHref="/analyses" backLabel="Voltar" />
         <div className="pt-16">
           <div className="max-w-4xl mx-auto px-6 py-8 text-center">
             <IoAlert className="text-6xl text-error mx-auto mb-4" />
@@ -148,18 +147,7 @@ export default function AnalysisDetailPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      <Navbar
-        rightAction={
-          <button
-            onClick={() => router.push("/analyses")}
-            className="btn btn-ghost btn-sm gap-1"
-            aria-label="Voltar para lista de análises"
-          >
-            <IoArrowBack />
-            Voltar
-          </button>
-        }
-      />
+      <Navbar backHref="/analyses" backLabel="Voltar" />
 
       {/* Content */}
       <div className="pt-16">

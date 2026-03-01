@@ -48,13 +48,7 @@ export default function HistoryPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      <Navbar
-        rightAction={
-          <Link href="/analyze" className="btn btn-primary btn-sm">
-            Nova Análise
-          </Link>
-        }
-      />
+      <Navbar pageAction={<Link href="/analyze" className="btn btn-primary btn-sm">Nova Análise</Link>} />
 
       {/* Content */}
       <div className="pt-16">

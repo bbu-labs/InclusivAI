@@ -9,6 +9,7 @@ import StepIndicator from "@/components/StepIndicator";
 import AudioPlayer from "@/components/AudioPlayer";
 import QAPanel from "@/components/QAPanel";
 import { ScoreGauge, TosResult, ScamResult, GeneralResult, buildAudioText } from "@/components/AnalysisResults";
+import Link from "next/link";
 import {
   IoShareSocial,
   IoImage,
@@ -109,11 +110,7 @@ export default function ResultsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-base-100">
-        <Navbar
-          rightAction={
-            <span className="text-sm text-base-content/60">Analisando...</span>
-          }
-        />
+        <Navbar statusText="Analisando..." />
 
         <div className="pt-16">
           <div className="max-w-4xl mx-auto px-6 py-8">
@@ -147,7 +144,7 @@ export default function ResultsPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-base-100">
-        <Navbar />
+        <Navbar backHref="/analyze" backLabel="Nova Análise" />
 
         <div className="pt-16">
           <div className="max-w-4xl mx-auto px-6 py-8">
@@ -188,14 +185,9 @@ export default function ResultsPage() {
   return (
     <div className="min-h-screen bg-base-100">
       <Navbar
-        rightAction={
-          <button
-            onClick={() => router.push("/analyze")}
-            className="btn btn-primary btn-sm"
-          >
-            Nova Análise
-          </button>
-        }
+        backHref="/analyses"
+        backLabel="Minhas Análises"
+        pageAction={<Link href="/analyze" className="btn btn-primary btn-sm">Nova Análise</Link>}
       />
 
       {/* Main Content */}

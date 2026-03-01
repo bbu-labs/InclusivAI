@@ -1,32 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 import { apiGetRanking } from "@/lib/api";
 import type { ApiRanking } from "@/types";
 import { IoTrophy, IoWarning, IoRemove, IoCheckmarkCircle } from "react-icons/io5";
 import Navbar from "@/components/Navbar";
 
 export default function RankingPage() {
+  const router = useRouter();
+  const { session, isLoading: authLoading } = useAuth();
   const [rankings, setRankings] = useState<ApiRanking[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!session) {
+      router.replace("/login");
+      return;
+    }
+
     apiGetRanking()
       .then(({ rankings }) => setRankings(rankings))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [session, authLoading, router]);
 
   return (
     <div className="min-h-screen bg-base-100">
-      <Navbar
-        rightAction={
-          <Link href="/analyze" className="btn btn-primary btn-sm">
-            Analisar Documento
-          </Link>
-        }
-      />
+      <Navbar />
 
       {/* Content */}
       <div className="pt-16">

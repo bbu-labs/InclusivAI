@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/contexts/AppContext";
+import { useAuth } from "@/contexts/AuthContext";
 import StepIndicator from "@/components/StepIndicator";
 import { IoDocumentText, IoCheckmark, IoClose } from "react-icons/io5";
 import { DOC_TYPE_LABELS, type DocType } from "@/types";
@@ -13,12 +14,17 @@ const STEPS = ["Entrada", "Processamento", "Confirmação", "Resultado"];
 export default function ConfirmationPage() {
   const router = useRouter();
   const { state } = useApp();
+  const { session } = useAuth();
 
   useEffect(() => {
+    if (!session) {
+      router.replace("/login");
+      return;
+    }
     if (!state.documentId || !state.document) {
       router.replace("/analyze");
     }
-  }, [state.documentId, state.document, router]);
+  }, [session, state.documentId, state.document, router]);
 
   const handleConfirm = () => {
     router.push("/results");
@@ -34,17 +40,7 @@ export default function ConfirmationPage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      <Navbar
-        rightAction={
-          <button
-            onClick={() => router.back()}
-            className="btn btn-ghost btn-sm"
-            aria-label="Voltar"
-          >
-            Voltar
-          </button>
-        }
-      />
+      <Navbar backHref="/analyze" backLabel="Voltar" />
 
       {/* Main Content */}
       <div className="pt-16">

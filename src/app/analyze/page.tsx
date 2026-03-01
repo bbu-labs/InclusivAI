@@ -171,16 +171,7 @@ export default function AnalyzePage() {
 
   return (
     <div className="min-h-screen bg-base-100">
-      <Navbar
-        rightAction={
-          <button
-            onClick={() => router.push("/")}
-            className="btn btn-ghost btn-sm"
-          >
-            Voltar ao Início
-          </button>
-        }
-      />
+      <Navbar backHref="/" backLabel="Início" />
 
       {/* ───── Main Content ───── */}
       <div className="pt-16">
