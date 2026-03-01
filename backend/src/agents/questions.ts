@@ -5,7 +5,7 @@ import type { SupportedCountry } from "../types";
 import { getFramework } from "../prompts/legal-frameworks";
 
 const CONTEXT_TOKEN_LIMIT = 4000;
-const OUTPUT_TOKEN_LIMIT = 1024;
+const OUTPUT_TOKEN_LIMIT = 2048;
 
 function buildQAPrompt(country: SupportedCountry = "BR"): string {
   const fw = getFramework(country);
