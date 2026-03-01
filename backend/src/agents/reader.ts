@@ -45,17 +45,10 @@ export async function readFromPdf(
   const { text, needsOcr } = await extractTextFromPdf(pdfBytes);
 
   if (needsOcr) {
-    // Scanned PDF — convert first page to image would need a separate service
-    // For now, return error suggesting image upload instead
-    return {
-      success: false,
-      data: null,
-      error: "PDF escaneado detectado. Por favor, envie como imagem para OCR.",
-      tokensInput: 0,
-      tokensOutput: 0,
-      modelUsed: MINISTRAL_8B,
-      durationMs: 0,
-    };
+    const base64 = btoa(
+      new Uint8Array(pdfBytes).reduce((s, b) => s + String.fromCharCode(b), "")
+    );
+    return readFromImage(base64, "application/pdf", mistralClient);
   }
 
   return readFromText(text, mistralClient);

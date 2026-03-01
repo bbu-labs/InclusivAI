@@ -1,10 +1,14 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AppEnv } from "../types";
 import { requireAuth } from "../middleware/auth";
-import { createMistralClient, MISTRAL_LARGE } from "../services/mistral";
+import { createMistralClient, MINISTRAL_8B, MISTRAL_LARGE, type MistralClient } from "../services/mistral";
 import { DOC_GEN_TYPES, DOC_GEN_SYSTEM_PROMPT, DOC_GEN_USER_PROMPT, type DocGenType } from "../prompts/document-gen";
+import { DOC_CLASSIFY_PROMPT } from "../prompts/reader";
+import { isUrl, fetchUrlContent } from "../services/url-fetcher";
+import { extractTextFromPdf } from "../services/pdf";
 
 const documents = new Hono<AppEnv>();
 
@@ -20,11 +24,23 @@ const createTextDocSchema = z.object({
     .default("outro"),
 });
 
-// POST /api/documents/text — submit pasted text
+// POST /api/documents/text — submit pasted text or URL
 documents.post("/text", zValidator("json", createTextDocSchema), async (c) => {
   const user = c.get("user")!;
-  const { title, raw_text, doc_type } = c.req.valid("json");
+  const { title, doc_type } = c.req.valid("json");
+  let { raw_text } = c.req.valid("json");
   const supabaseAdmin = c.get("supabaseAdmin");
+
+  // If raw_text is a URL, fetch the page content
+  let sourceType: "text_input" | "url_import" = "text_input";
+  if (isUrl(raw_text)) {
+    const result = await fetchUrlContent(raw_text);
+    if (!result.ok) {
+      return c.json({ error: "Erro ao acessar URL", detail: result.error }, 400);
+    }
+    raw_text = result.text;
+    sourceType = "url_import";
+  }
 
   const { data, error } = await supabaseAdmin
     .from("documents")
@@ -33,13 +49,21 @@ documents.post("/text", zValidator("json", createTextDocSchema), async (c) => {
       title,
       raw_text,
       doc_type,
-      source_type: "text_input",
+      source_type: sourceType,
     })
     .select("id, title, doc_type, source_type, created_at")
     .single();
 
   if (error) {
     return c.json({ error: "Erro ao salvar documento" }, 500);
+  }
+
+  // Classify doc_type before responding so the UI shows the correct type
+  const mistralClient = createMistralClient(c.env.MISTRAL_API_KEY);
+  const classified = await classifyAndUpdate(supabaseAdmin, mistralClient, data.id, raw_text);
+  if (classified) {
+    data.doc_type = classified.doc_type;
+    if (classified.title) data.title = classified.title;
   }
 
   return c.json({ document: data }, 201);
@@ -153,6 +177,19 @@ documents.post("/upload", async (c) => {
     return c.json({ error: "Erro ao salvar documento", detail: error.message }, 500);
   }
 
+  // For text-extractable PDFs, classify doc_type before responding
+  if (isPdf) {
+    const { text, needsOcr } = await extractTextFromPdf(fileBuffer);
+    if (!needsOcr && text.length > 0) {
+      const mistralClient = createMistralClient(c.env.MISTRAL_API_KEY);
+      const classified = await classifyAndUpdate(supabaseAdmin, mistralClient, data.id, text);
+      if (classified) {
+        data.doc_type = classified.doc_type;
+        if (classified.title) data.title = classified.title;
+      }
+    }
+  }
+
   return c.json({ document: data }, 201);
 });
 
@@ -174,6 +211,54 @@ documents.delete("/:id", async (c) => {
 
   return c.json({ message: "Documento excluído com sucesso" });
 });
+
+// Classify document type using a lightweight LLM call.
+// Returns the updated fields, or null if classification fails.
+async function classifyAndUpdate(
+  supabase: SupabaseClient,
+  mistralClient: MistralClient,
+  docId: string,
+  text: string
+): Promise<{ doc_type: string; title: string } | null> {
+  try {
+    const snippet = text.slice(0, 2000);
+    const { data } = await mistralClient.chatJSON<{
+      tipo_documento: string;
+      titulo: string;
+    }>(
+      MINISTRAL_8B,
+      [
+        { role: "system", content: DOC_CLASSIFY_PROMPT },
+        { role: "user", content: snippet },
+      ],
+      256
+    );
+
+    const validTypes = [
+      "termos_de_uso",
+      "contrato",
+      "notificacao_judicial",
+      "carta_inss",
+      "mensagem_suspeita",
+      "outro",
+    ];
+    const docType = validTypes.includes(data.tipo_documento)
+      ? data.tipo_documento
+      : "outro";
+
+    const title = data.titulo?.slice(0, 200) || "";
+    const updates: Record<string, string> = { doc_type: docType };
+    if (title.length > 0) {
+      updates.title = title;
+    }
+
+    await supabase.from("documents").update(updates).eq("id", docId);
+    return { doc_type: docType, title: title || docId };
+  } catch (err) {
+    console.error("[CLASSIFY ERROR]", err);
+    return null;
+  }
+}
 
 const docGenSchema = z.object({
   type: z.enum(DOC_GEN_TYPES),

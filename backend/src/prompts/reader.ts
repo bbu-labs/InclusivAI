@@ -34,3 +34,14 @@ export const READER_USER_PROMPT = (text: string) =>
   `Analise e estruture o seguinte documento:\n\n${text}`;
 
 export const READER_IMAGE_PROMPT = `Extraia todo o texto visível nesta imagem e estruture-o no formato JSON especificado. Se a imagem contém uma mensagem suspeita (WhatsApp, SMS, email), classifique como "mensagem_suspeita".`;
+
+export const DOC_CLASSIFY_PROMPT = `Classifique o tipo deste documento e extraia seu título.
+Retorne APENAS JSON: {"tipo_documento": "...", "titulo": "..."}
+
+Tipos válidos:
+- "termos_de_uso" → Termos de uso, termos de serviço, política de privacidade
+- "contrato" → Contratos (aluguel, trabalho, prestação de serviço)
+- "notificacao_judicial" → Sentenças, notificações judiciais/extrajudiciais, mandados, intimações
+- "carta_inss" → Cartas do INSS, benefícios previdenciários
+- "mensagem_suspeita" → Mensagens de golpe, phishing, ofertas falsas
+- "outro" → Qualquer outro tipo`;
