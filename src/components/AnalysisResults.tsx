@@ -103,7 +103,7 @@ export function TosResult({
                 <div className="card-body p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
                         <span
                           className={`badge badge-sm ${getGravidadeBadge(
                             clause.gravidade
@@ -112,7 +112,7 @@ export function TosResult({
                           {getGravidadeLabel(clause.gravidade)}
                         </span>
                         {clause.artigo_cdc && (
-                          <span className="badge badge-sm badge-outline">
+                          <span className="text-xs text-base-content/50">
                             {clause.artigo_cdc}
                           </span>
                         )}
