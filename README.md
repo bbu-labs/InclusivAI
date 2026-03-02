@@ -237,7 +237,6 @@ InclusivAI/
 │
 ├── pitch/                      # Pitch video (Remotion, 8 animated scenes)
 ├── public/locales/             # Translations (pt-BR, en-US, fr-FR)
-├── docs/                       # Technical documentation
 └── .github/workflows/          # CI/CD (frontend & backend deploy)
 ```
 
@@ -382,7 +381,7 @@ The backend runs at [http://localhost:8787](http://localhost:8787).
 
 ## API
 
-The REST API is documented with OpenAPI 3.0 at [`/api/docs`](https://inclusive-api.bbu.app.br/api/docs). Also see [`docs/api.md`](docs/api.md).
+The REST API is documented with OpenAPI 3.0 at [`/api/docs`](https://inclusive-api.bbu.app.br/api/docs).
 
 ### Main Endpoints
 
@@ -457,15 +456,6 @@ Rate limiting uses Cloudflare KV sliding windows keyed by user ID.
 | `company_rankings` | Aggregated company abuse scores (rolling average) |
 
 All tables enforce Row-Level Security (RLS). Analysis writes use a service role client that bypasses RLS.
-
----
-
-## Documentation
-
-- [`docs/api.md`](docs/api.md): Full API reference
-- [`docs/deploy-guide.md`](docs/deploy-guide.md): Deployment guide
-- [`docs/backend-plan.md`](docs/backend-plan.md): Implementation roadmap
-- [`docs/frontend-integration.md`](docs/frontend-integration.md): Frontend integration
 
 ---
 
