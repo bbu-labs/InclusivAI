@@ -1,8 +1,8 @@
-# Clausula Oculta — InclusivAI
+# Clausula Oculta | InclusivAI
 
 [Access Here](http://inclusivai.bbu.app.br) | [API Docs](https://inclusive-api.bbu.app.br/api/docs)
 
-**Multi-agent AI system for consumer protection** that transforms Terms of Service, contracts, government letters, and suspicious messages into accessible plain language — flagging abusive clauses, detecting scams, and citing the exact laws that protect you. All in under 30 seconds.
+**Multi-agent AI system for consumer protection** that transforms Terms of Service, contracts, government letters, and suspicious messages into accessible plain language, flagging abusive clauses, detecting scams, and citing the exact laws that protect you. All in under 30 seconds.
 
 > Built for the **Mistral AI Hackathon 2026** by **BBU Labs**
 
@@ -10,16 +10,16 @@
 
 ## Pitch Video
 
-[![Clausula Oculta — Pitch Video](https://img.youtube.com/vi/Cb9tHJWlFrs/maxresdefault.jpg)](https://youtu.be/Cb9tHJWlFrs)
+[![Clausula Oculta Pitch Video](https://img.youtube.com/vi/Cb9tHJWlFrs/maxresdefault.jpg)](https://youtu.be/Cb9tHJWlFrs)
 
-**[Watch on YouTube](https://youtu.be/Cb9tHJWlFrs)** — 2.5-minute overview of the problem, solution, demo, and architecture.
+**[Watch on YouTube](https://youtu.be/Cb9tHJWlFrs)** | 2.5-minute overview of the problem, solution, demo, and architecture.
 
 ---
 
 ## The Problem
 
 - **95% of people** never read the Terms of Service they agree to
-- **2.8 million digital scams** reported in Brazil in a single year — causing **R$ 2.5 billion** in losses
+- **2.8 million digital scams** reported in Brazil in a single year, causing **R$ 2.5 billion** in losses
 - **156 million internet users** in Brazil with virtually **zero consumer legal AI products** in Portuguese
 - Searches for digital rights have grown **576%**
 - Legal documents are designed to be unreadable. Companies count on that.
@@ -28,7 +28,7 @@
 
 ## About the Project
 
-**Clausula Oculta** (Hidden Clause) analyzes complex documents — Terms of Service, contracts, INSS benefit letters, court notices, and suspicious messages — and translates them into simple, accessible, and understandable language. The system uses a multi-agent AI pipeline powered by **Mistral AI** to extract text, classify document types, identify abusive clauses, detect scams, and generate legal consumer defense documents.
+**Clausula Oculta** (Hidden Clause) analyzes complex documents like Terms of Service, contracts, INSS benefit letters, court notices, and suspicious messages, then translates them into simple, accessible, and understandable language. The system uses a multi-agent AI pipeline powered by **Mistral AI** to extract text, classify document types, identify abusive clauses, detect scams, and generate legal consumer defense documents.
 
 ### Key Features
 
@@ -36,11 +36,11 @@
 - **5 input methods**: URL paste, text paste, PDF/image upload, camera/photo (OCR), audio recording (STT)
 - **Accessible explanations** with adjustable simplification levels (fundamental, intermediate, technical)
 - **Audio narration** of results via ElevenLabs (3 language-matched voices)
-- **Q&A** about the analyzed document — grounded in actual text with cited excerpts
+- **Q&A** about the analyzed document , grounded in actual text with cited excerpts
 - **Legal document generation**: PROCON complaints, Small Claims Court petitions, SAC call scripts
-- **Company ranking** — public leaderboard by aggregated abuse scores
+- **Company ranking** , public leaderboard by aggregated abuse scores
 - **Social sharing** with HMAC-signed links and auto-generated Open Graph image cards
-- **Age-adaptive UI** — interface transforms based on user age profile (senior mode with larger fonts, audio-first, guided tips)
+- **Age-adaptive UI** that transforms based on user age profile (senior mode with larger fonts, audio-first, guided tips)
 - **3 countries**: Brazil (PT-BR), United States (EN-US), France (FR-FR) with localized legal frameworks
 - **Accessibility**: font size (12–32px), high contrast, audio output, simplified navigation
 
@@ -77,8 +77,8 @@ Multi-Agent AI Pipeline
     |
     v
 Results displayed in frontend
-    |-- Optional: Q&A Agent (ministral-8b) — follow-up questions
-    |-- Optional: Document Generation (mistral-large) — legal letters
+    |-- Optional: Q&A Agent (ministral-8b), follow-up questions
+    |-- Optional: Document Generation (mistral-large), legal letters
     |-- Optional: Share card generation (SVG -> PNG)
 ```
 
@@ -88,7 +88,7 @@ Results displayed in frontend
 |-------|-------|---------|-------|--------|
 | **Reader** | `ministral-8b-latest` / `pixtral-large-latest` | Parse any input into structured document | URL, text, PDF, image, audio transcript | `StructuredDocument` (title, type, issuer, sections) |
 | **Legal Triage** | `ministral-8b-latest` | Classify legal area and analysis pathway | First 2000 tokens of document | `LegalContext` (area, applicable laws, analysis type override) |
-| **Simplifier** | `mistral-large-latest` | Core analysis — plain-language breakdown | Full document + legal context | ToS / Scam / General result with scores and clauses |
+| **Simplifier** | `mistral-large-latest` | Core analysis, plain-language breakdown | Full document + legal context | ToS / Scam / General result with scores and clauses |
 | **Audio** | ElevenLabs `eleven_multilingual_v2` | Generate spoken narration | Analysis summary text | MP3 audio (cached 30 days in KV + Supabase Storage) |
 | **Q&A** | `ministral-8b-latest` | Answer user questions grounded in document | Question + document + summary | Answer with cited source excerpt |
 
@@ -155,7 +155,7 @@ Each analysis cites the exact laws applicable to the user's jurisdiction.
 
 ### Brazil (PT-BR)
 
-- **Consumer Protection:** Codigo de Defesa do Consumidor (CDC — Lei 8.078/90), Decreto 7.962/13
+- **Consumer Protection:** Codigo de Defesa do Consumidor (CDC, Lei 8.078/90), Decreto 7.962/13
 - **Data Privacy:** LGPD (Lei 13.709/18), Marco Civil da Internet (Lei 12.965/14)
 - **Digital:** Lei de Crimes Ciberneticos (Lei 12.737/12)
 - **Agencies:** PROCON, ANPD, Banco Central, SaferNet Brasil
@@ -235,7 +235,7 @@ InclusivAI/
 │   ├── migrations/             # 11 SQL migrations (Supabase)
 │   └── wrangler.toml           # Cloudflare Workers config
 │
-├── pitch/                      # Pitch video (Remotion — 8 animated scenes)
+├── pitch/                      # Pitch video (Remotion, 8 animated scenes)
 ├── public/locales/             # Translations (pt-BR, en-US, fr-FR)
 ├── docs/                       # Technical documentation
 └── .github/workflows/          # CI/CD (frontend & backend deploy)
@@ -354,8 +354,8 @@ The backend runs at [http://localhost:8787](http://localhost:8787).
 ```
 
 3. Create the buckets in Supabase Storage:
-   - `uploads` (private) — for uploaded documents
-   - `audio` (public) — for audio narrations
+   - `uploads` (private): for uploaded documents
+   - `audio` (public): for audio narrations
 
 ---
 
@@ -409,7 +409,7 @@ Authentication via Bearer token (Supabase JWT) in the `Authorization` header.
 
 ## Deployment
 
-### Frontend — Cloudflare Pages
+### Frontend (Cloudflare Pages)
 
 ```bash
 npm run build:cf
@@ -417,7 +417,7 @@ npm run build:cf
 
 Automatic deployment via GitHub Actions (`.github/workflows/deploy-frontend.yml`).
 
-### Backend — Cloudflare Workers
+### Backend (Cloudflare Workers)
 
 ```bash
 cd backend
@@ -452,7 +452,7 @@ Rate limiting uses Cloudflare KV sliding windows keyed by user ID.
 |---|---|
 | `profiles` | User preferences, age range, plan, usage counters (extends `auth.users`) |
 | `documents` | Uploaded documents with extracted text and structured data |
-| `analyses` | AI analysis results — summary JSONB, abuse score, token/cost tracking |
+| `analyses` | AI analysis results: summary JSONB, abuse score, token/cost tracking |
 | `questions` | Q&A history per analysis with cited source excerpts |
 | `company_rankings` | Aggregated company abuse scores (rolling average) |
 
@@ -462,10 +462,10 @@ All tables enforce Row-Level Security (RLS). Analysis writes use a service role 
 
 ## Documentation
 
-- [`docs/api.md`](docs/api.md) — Full API reference
-- [`docs/deploy-guide.md`](docs/deploy-guide.md) — Deployment guide
-- [`docs/backend-plan.md`](docs/backend-plan.md) — Implementation roadmap
-- [`docs/frontend-integration.md`](docs/frontend-integration.md) — Frontend integration
+- [`docs/api.md`](docs/api.md): Full API reference
+- [`docs/deploy-guide.md`](docs/deploy-guide.md): Deployment guide
+- [`docs/backend-plan.md`](docs/backend-plan.md): Implementation roadmap
+- [`docs/frontend-integration.md`](docs/frontend-integration.md): Frontend integration
 
 ---
 
@@ -486,5 +486,5 @@ This project was developed for the **Mistral AI Hackathon 2026** by **BBU Labs**
 ---
 
 <p align="center">
-  <strong>Clausula Oculta</strong> — Information is the best defense for consumers. Let's democratize it.
+  <strong>Clausula Oculta</strong> | Information is the best defense for consumers. Let's democratize it.
 </p>
